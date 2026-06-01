@@ -1,0 +1,2326 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+ R+Co · TREATMENT REVENUE MODEL
+ © 2026 R+Co / R+Coach. All Rights Reserved.
+
+ PROPRIETARY & CONFIDENTIAL · TRADE SECRET PROTECTED
+
+ This file, including but not limited to all HTML structure, CSS, JavaScript,
+ mathematical models, persona-specific calculation logic, the diagnostic-to-
+ prescription framework (Breakage→BOND BUILDING, Dry→HYDRATION, Fine→VOLUME),
+ the consultative methodology, the embedded R+Co brand assets, the Power of
+ Add-On Services compounding model, the "Building a Treatment Culture"
+ roadmap framework, and all associated copy and creative — constitutes
+ confidential trade-secret intellectual property of R+Co / R+Coach.
+
+ Reproduction, reverse-engineering, scraping, redistribution, derivative use,
+ or incorporation into any competing product or service — in whole or in part —
+ is STRICTLY PROHIBITED without prior written authorization from R+Coach.
+
+ This software is authorized solely for use by licensed R+Coach Brand Managers
+ and contracted partner salons under the terms of their executed agreements.
+
+ Unauthorized use, disclosure, or replication will be prosecuted to the fullest
+ extent permitted under the Defend Trade Secrets Act (DTSA), applicable state
+ trade-secret statutes, federal copyright law, and applicable trademark law.
+
+ Build fingerprint: see window.__RC_BUILD at runtime.
+================================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Treatment Calc">
+<meta name="theme-color" content="#000000">
+<title>R+Co | Treatment Revenue Model</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --teal:    #14B6B5;
+    --teal-dk: #0D8985;
+    --teal-bg: #E6F7F7;
+    --coral:   #FD818D;
+    --green:   #2A9D5C;
+    --black:   #000000;
+    --white:   #FFFFFF;
+    --bg:      #F4F5F7;
+    --gray1:   #1F1F23;
+    --gray2:   #5E5E5E;
+    --gray3:   #8E8E93;
+    --border:  #E6E6E6;
+    --font:    'Helvetica Neue','HelveticaNeue',Helvetica,Arial,sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { background: #0b0b0b; }
+  body { font-family: var(--font); color: var(--black); min-height: 100vh; }
+
+  /* iPhone-shaped container — entire app renders as a 430px max column */
+  #app {
+    max-width: 430px;
+    margin: 0 auto;
+    background: var(--bg);
+    min-height: 100vh;
+    position: relative;
+    box-shadow: 0 0 60px rgba(0,0,0,0.4);
+  }
+
+  /* HEADER */
+  header.app-header {
+    background: var(--black); color: white;
+    padding: 14px 20px;
+    padding-top: calc(14px + env(safe-area-inset-top));
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .logo {
+    display: block;
+    height: 28px;
+    width: auto;
+  }
+  .step-label {
+    font-size: 10px; font-weight: 800;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--teal);
+  }
+  .header-right {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .reset-btn {
+    background: transparent; color: rgba(255,255,255,0.55);
+    border: 1px solid rgba(255,255,255,0.25);
+    font-family: var(--font); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 6px 10px; border-radius: 6px; cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .reset-btn:hover { color: white; border-color: white; }
+
+  /* Action bar (sticky bottom) */
+  .action-bar {
+    display: flex; gap: 10px;
+    margin-top: 26px; padding: 0 2px;
+  }
+  .action-btn {
+    flex: 1; padding: 16px 14px;
+    font-family: var(--font); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    border-radius: 12px; cursor: pointer; border: none;
+    transition: all 0.15s ease;
+  }
+  .action-btn.primary {
+    background: var(--teal); color: white;
+    box-shadow: 0 4px 14px rgba(20,182,181,0.35);
+  }
+  .action-btn.primary:hover { background: var(--teal-dk); }
+  .action-btn.secondary {
+    background: white; color: var(--gray2);
+    border: 1.5px solid var(--border);
+  }
+  .action-btn.secondary:hover { color: var(--black); border-color: var(--gray3); }
+
+  /* Action items / Monday playbook */
+  .playbook {
+    margin-top: 26px;
+    background: var(--bg); border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .playbook-title {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--teal-dk); margin-bottom: 12px;
+  }
+  .playbook-item {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 10px 0;
+    border-top: 1px solid rgba(0,0,0,0.06);
+  }
+  .playbook-item:first-of-type { border-top: none; padding-top: 4px; }
+  .playbook-num {
+    flex: 0 0 24px;
+    width: 24px; height: 24px;
+    background: var(--teal); color: white;
+    border-radius: 50%;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .playbook-text {
+    font-size: 13px; color: var(--gray1); line-height: 1.5;
+  }
+  .playbook-text strong { color: var(--black); }
+  .playbook.owner .playbook-num { background: var(--teal); }
+  .playbook.commission .playbook-num { background: var(--coral); }
+  .playbook.rental .playbook-num { background: var(--green); }
+  .playbook.owner .playbook-title { color: var(--teal-dk); }
+  .playbook.commission .playbook-title { color: var(--coral); }
+  .playbook.rental .playbook-title { color: var(--green); }
+
+  /* Triad block — clean stacked bullets for Breakage/Dry/Fine → Treatment mapping */
+  .triad-block {
+    margin: 10px 0;
+    padding: 12px 14px;
+    background: white;
+    border-radius: 8px;
+    border-left: 3px solid var(--teal);
+  }
+  .triad-row {
+    font-size: 12.5px;
+    line-height: 1.5;
+    padding: 8px 0;
+    color: var(--gray1);
+  }
+  .triad-row + .triad-row { border-top: 1px solid rgba(0,0,0,0.05); }
+  .triad-row strong { color: var(--black); }
+  .triad-concern {
+    display: block;
+    line-height: 1.4;
+  }
+  .triad-remedy {
+    display: block;
+    margin-top: 4px;
+    padding-left: 0;
+    line-height: 1.4;
+  }
+  .triad-row .triad-sub {
+    color: var(--gray3);
+    font-size: 11.5px;
+    font-style: italic;
+    margin-left: 2px;
+  }
+  .triad-row .triad-arrow {
+    color: var(--teal);
+    font-weight: 800;
+    margin-right: 6px;
+    font-size: 14px;
+  }
+  .playbook.commission .triad-row .triad-arrow { color: var(--coral); }
+  .playbook.owner .triad-row .triad-arrow      { color: var(--teal); }
+  .roadmap.commission .triad-row .triad-arrow  { color: var(--coral); }
+  .playbook.owner .triad-block      { border-left-color: var(--teal); }
+  .playbook.owner .triad-arrow      { color: var(--teal); }
+  .playbook.commission .triad-block { border-left-color: var(--coral); }
+  .playbook.commission .triad-arrow { color: var(--coral); }
+  .roadmap.commission .triad-block  { border-left-color: var(--coral); }
+  .roadmap.commission .triad-arrow  { color: var(--coral); }
+
+  /* Consult block — numbered list of 4 discovery questions */
+  .consult-block {
+    margin: 10px 0;
+    padding: 12px 14px;
+    background: white;
+    border-radius: 8px;
+    border-left: 3px solid var(--coral);
+  }
+  .consult-row {
+    font-size: 12.5px;
+    line-height: 1.55;
+    padding: 5px 0;
+    color: var(--gray1);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .consult-row + .consult-row { border-top: 1px solid rgba(0,0,0,0.05); }
+  .consult-num {
+    flex: 0 0 20px;
+    width: 20px; height: 20px;
+    background: var(--coral); color: white;
+    border-radius: 50%;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .playbook.owner .consult-block { border-left-color: var(--teal); }
+  .playbook.owner .consult-num   { background: var(--teal); }
+
+  /* Roadmap — the deeper "Building a Treatment Culture" section.
+     Similar visual treatment to playbook, but supports indented sub-bullets. */
+  .roadmap {
+    margin-top: 18px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .roadmap-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gray3); margin-bottom: 4px;
+  }
+  .roadmap-title {
+    font-size: 17px; font-weight: 800; letter-spacing: -0.01em; color: var(--black);
+    margin-bottom: 4px; line-height: 1.2;
+  }
+  .roadmap-sub {
+    font-size: 12px; color: var(--gray2); line-height: 1.45;
+    margin-bottom: 12px;
+  }
+  .roadmap-item {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 0;
+    border-top: 1px solid rgba(0,0,0,0.06);
+  }
+  .roadmap-item:first-of-type { border-top: none; padding-top: 4px; }
+  .roadmap-num {
+    flex: 0 0 26px;
+    width: 26px; height: 26px;
+    background: var(--teal); color: white;
+    border-radius: 6px;
+    font-size: 12px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .roadmap-body {
+    font-size: 13px; color: var(--gray1); line-height: 1.55;
+    flex: 1; min-width: 0;
+  }
+  .roadmap-body strong { color: var(--black); }
+  .roadmap-sublist {
+    margin-top: 8px;
+    padding: 10px 14px;
+    background: var(--bg);
+    border-radius: 8px;
+    border-left: 3px solid var(--teal);
+  }
+  .roadmap-sublist .sub-item {
+    font-size: 12px;
+    color: var(--gray1);
+    padding: 3px 0;
+    line-height: 1.5;
+  }
+  .roadmap-sublist .sub-item::before {
+    content: "→  ";
+    color: var(--teal);
+    font-weight: 700;
+  }
+  .roadmap-sublist .sub-item .sub-note {
+    display: inline-block;
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: var(--gray3);
+    font-style: italic;
+  }
+  .roadmap.owner .roadmap-num         { background: var(--teal); }
+  .roadmap.owner .roadmap-sublist     { border-left-color: var(--teal); }
+  .roadmap.owner .sub-item::before    { color: var(--teal-dk); }
+  .roadmap.owner .roadmap-eyebrow     { color: var(--teal-dk); }
+  .roadmap.commission .roadmap-num         { background: var(--coral); }
+  .roadmap.commission .roadmap-sublist     { border-left-color: var(--coral); }
+  .roadmap.commission .sub-item::before    { color: var(--coral); }
+  .roadmap.commission .roadmap-eyebrow     { color: var(--coral); }
+  .roadmap.rental .roadmap-num         { background: var(--green); }
+  .roadmap.rental .roadmap-sublist     { border-left-color: var(--green); }
+  .roadmap.rental .sub-item::before    { color: var(--green); }
+  .roadmap.rental .roadmap-eyebrow     { color: var(--green); }
+
+  /* Legal footer — visible on every screen */
+  .legal-footer {
+    font-size: 9px; line-height: 1.55;
+    color: rgba(0,0,0,0.42);
+    text-align: center;
+    padding: 14px 18px 22px;
+    margin-top: 4px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+    letter-spacing: 0.01em;
+  }
+  .legal-footer strong { color: rgba(0,0,0,0.55); letter-spacing: 0.06em; font-size: 9px; }
+  .legal-footer .build-id {
+    display: block; margin-top: 8px;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 8px; color: rgba(0,0,0,0.32);
+    letter-spacing: 0.04em;
+  }
+
+  /* CONTAINER */
+  .wrap {
+    padding: 20px 16px 80px;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+
+  /* PERSONA TOGGLE */
+  .persona-bar {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 8px; margin-bottom: 28px;
+    background: white; padding: 8px; border-radius: 14px; border: 1px solid var(--border);
+  }
+  .persona-btn {
+    padding: 14px 12px; border: 2px solid transparent;
+    background: transparent; color: var(--gray2);
+    font-family: var(--font); font-size: 14px; font-weight: 700;
+    border-radius: 10px; cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .persona-btn:hover { color: var(--black); background: var(--bg); }
+  .persona-btn.active {
+    background: var(--black); color: white;
+  }
+  .persona-btn .emoji { font-size: 18px; }
+  .persona-btn[data-persona="owner"].active     { background: var(--teal); }
+  .persona-btn[data-persona="commission"].active { background: var(--coral); }
+  .persona-btn[data-persona="rental"].active     { background: var(--green); }
+
+  /* SECTION CARDS */
+  .section {
+    background: white; border-radius: 18px;
+    margin-bottom: 18px;
+    overflow: hidden; border: 1px solid var(--border);
+  }
+  /* Hero structure: full image at top (always visible, Cosmo badge intact) +
+     dark caption band below with section number/title/sub */
+  .section-hero {
+    position: relative;
+    display: flex; flex-direction: column;
+    background: white;
+  }
+  .hero-image {
+    width: 100%;
+    height: 360px;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: white;
+  }
+  .hero-caption {
+    background: var(--black);
+    color: white;
+    padding: 16px 20px 18px;
+  }
+  .section-number {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+    color: var(--teal); text-transform: uppercase;
+  }
+  .section-title {
+    font-size: 24px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15;
+    margin-top: 4px; color: white;
+  }
+  .section-sub {
+    font-size: 13px; color: rgba(255,255,255,0.75);
+    margin-top: 5px; line-height: 1.45;
+  }
+  /* Hero images per section */
+  #section-1 .hero-image { background-image: url('hero-1.jpg'); }
+  #section-2 .hero-image { background-image: url('hero-2.jpg'); }
+  #section-3 .hero-image { background-image: url('hero-3.jpg'); }
+  #section-4 .hero-image { background-image: url('hero-4.jpg'); }
+
+  .section-body { padding: 22px 20px; }
+
+  /* FIELDS */
+  .field-row { display: grid; gap: 16px; margin-bottom: 14px; }
+  .field-row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .field-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .field {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .field label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--gray2);
+  }
+  .field input, .field select {
+    height: 48px; padding: 0 14px;
+    font-family: var(--font); font-size: 15px; font-weight: 500;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    background: white; color: var(--black);
+    outline: none; transition: border-color 0.15s ease;
+  }
+  .field input:focus, .field select:focus { border-color: var(--teal); }
+  .field .hint { font-size: 11px; color: var(--gray3); margin-top: 2px; }
+
+  /* PREFIXED INPUT (e.g. $ %) */
+  .input-prefix { position: relative; }
+  .input-prefix::before {
+    content: attr(data-prefix); position: absolute;
+    left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--gray2); font-size: 14px; font-weight: 600;
+    pointer-events: none;
+  }
+  .input-prefix input { padding-left: 28px; }
+  .input-suffix { position: relative; }
+  .input-suffix::after {
+    content: attr(data-suffix); position: absolute;
+    right: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--gray2); font-size: 14px; font-weight: 600;
+    pointer-events: none;
+  }
+  .input-suffix input { padding-right: 30px; }
+
+  /* SLIDER */
+  .slider-wrap { padding: 18px 0; }
+  .slider-row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .slider-label {
+    font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--gray2);
+  }
+  .slider-value {
+    font-size: 32px; font-weight: 700; color: var(--teal-dk); letter-spacing: -0.02em;
+  }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 6px; background: var(--border); border-radius: 3px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 24px; height: 24px; background: var(--teal);
+    border-radius: 50%; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(20,182,181,0.4);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 24px; height: 24px; background: var(--teal);
+    border-radius: 50%; cursor: pointer; border: none;
+    box-shadow: 0 2px 8px rgba(20,182,181,0.4);
+  }
+  .slider-scale {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--gray3); margin-top: 6px;
+  }
+
+  /* RESULT BLOCKS */
+  .result-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px; margin-top: 8px;
+  }
+  .result-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .result-card {
+    background: var(--bg); border-radius: 12px; padding: 18px 20px;
+    border-left: 4px solid var(--teal);
+  }
+  .result-card.coral { border-left-color: var(--coral); }
+  .result-card.green { border-left-color: var(--green); }
+  .result-card.black { border-left-color: var(--black); }
+  .result-card .r-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--gray2);
+  }
+  .result-card .r-value {
+    font-size: 28px; font-weight: 700; color: var(--black); letter-spacing: -0.02em;
+    margin-top: 6px; line-height: 1.1;
+  }
+  .result-card .r-value.teal { color: var(--teal-dk); }
+  .result-card .r-value.coral { color: var(--coral); }
+  .result-card .r-value.green { color: var(--green); }
+  .result-card .r-sub {
+    font-size: 12px; color: var(--gray2); margin-top: 4px;
+  }
+
+  /* CURRENT REALITY summary line */
+  .reality-line {
+    background: var(--black); color: white;
+    padding: 20px 24px; border-radius: 12px;
+    margin-top: 18px;
+    font-size: 16px; line-height: 1.5;
+  }
+  .reality-line strong { color: var(--teal); }
+  .reality-line .conv-pct { font-size: 36px; font-weight: 700; color: var(--teal); display: block; margin: 4px 0; }
+
+  /* POWER OF ADD-ON section */
+  .ticket-comparison {
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    gap: 18px; align-items: center; margin: 20px 0;
+  }
+  .ticket-box {
+    background: var(--bg); border-radius: 12px; padding: 24px;
+    text-align: center;
+  }
+  .ticket-box.now { border: 2px solid var(--gray3); }
+  .ticket-box.future { border: 2px solid var(--teal); background: var(--teal-bg); }
+  .ticket-box .t-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--gray2); margin-bottom: 8px;
+  }
+  .ticket-box .t-value {
+    font-size: 40px; font-weight: 700; color: var(--black); letter-spacing: -0.02em;
+  }
+  .ticket-box.future .t-value { color: var(--teal-dk); }
+  .ticket-box .t-sub { font-size: 12px; color: var(--gray2); margin-top: 4px; }
+  .ticket-arrow {
+    font-size: 32px; color: var(--teal); font-weight: 300;
+  }
+  .lift-badge {
+    background: var(--teal); color: white;
+    padding: 16px 24px; border-radius: 12px;
+    text-align: center;
+    margin-top: 8px;
+  }
+  .lift-badge .l-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    opacity: 0.9;
+  }
+  .lift-badge .l-value {
+    font-size: 48px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; margin-top: 4px;
+  }
+  .lift-badge .l-sub { font-size: 13px; opacity: 0.85; margin-top: 6px; }
+
+  /* Compound projection table */
+  .compound-table {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px; margin-top: 22px;
+  }
+  .compound-cell {
+    background: white; border: 2px solid var(--border); border-radius: 12px;
+    padding: 18px; text-align: center;
+  }
+  .compound-cell .y-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--teal-dk);
+  }
+  .compound-cell .y-value {
+    font-size: 26px; font-weight: 700; color: var(--black); margin-top: 6px; letter-spacing: -0.02em;
+  }
+  .compound-cell .y-sub { font-size: 11px; color: var(--gray3); margin-top: 4px; }
+
+  /* PHASE 1 DEBUG BANNER */
+  .phase-banner {
+    background: #FFF4D6; border-left: 4px solid #E0A800;
+    padding: 12px 16px; border-radius: 8px; font-size: 13px; color: #6B5300;
+    margin-bottom: 20px;
+  }
+  .phase-banner strong { color: #4A3800; }
+
+  /* PERSONA-SPECIFIC HIGHLIGHTS */
+  .persona-headline {
+    background: var(--black); color: white;
+    padding: 22px 26px; border-radius: 12px;
+    margin-top: 18px;
+  }
+  .persona-headline.owner     { background: var(--teal-dk); }
+  .persona-headline.commission { background: var(--coral); }
+  .persona-headline.rental    { background: var(--green); }
+  .persona-headline .h-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.85; }
+  .persona-headline .h-value   { font-size: 48px; font-weight: 700; letter-spacing: -0.02em; margin-top: 4px; line-height: 1.1; }
+  .persona-headline .h-sub     { font-size: 14px; opacity: 0.9; margin-top: 6px; line-height: 1.5; }
+
+  /* Since the entire app is now a 430px column, apply the mobile-first
+     layout at all viewports. */
+  .field-row.cols-2, .field-row.cols-3 { grid-template-columns: 1fr; }
+  .result-grid, .result-grid.cols-3, .compound-table { grid-template-columns: 1fr; }
+  .ticket-comparison { grid-template-columns: 1fr; }
+  .ticket-arrow { transform: rotate(90deg); }
+
+  /* Result grid for "current vs target" can be 2 cols when space allows */
+  @media (min-width: 380px) {
+    .compound-table { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  }
+
+  /* ============================================== */
+  /* iPhone-optimized view (≤ 480px) — primary target */
+  /* ============================================== */
+  @media (max-width: 480px) {
+    body { font-size: 14px; }
+
+    /* Header */
+    header.app-header {
+      padding: 12px 16px;
+      padding-top: calc(12px + env(safe-area-inset-top));
+    }
+    .logo { height: 24px; }
+    .step-label { font-size: 9px; letter-spacing: 0.1em; }
+    .header-right { gap: 8px; }
+    .reset-btn { font-size: 9px; padding: 5px 8px; letter-spacing: 0.08em; }
+    .action-bar { flex-direction: column; gap: 8px; margin-top: 22px; }
+    .action-btn { font-size: 12px; padding: 14px 12px; letter-spacing: 0.06em; }
+    .playbook { padding: 16px 18px; margin-top: 22px; }
+    .playbook-title { font-size: 10px; }
+    .playbook-text { font-size: 13px; }
+
+    /* Wrap */
+    .wrap {
+      padding: 18px 14px 60px;
+      padding-bottom: calc(60px + env(safe-area-inset-bottom));
+    }
+
+    /* Phase banner */
+    .phase-banner {
+      font-size: 12px; padding: 10px 14px;
+      line-height: 1.5;
+    }
+
+    /* Persona toggle — icon stacks above label */
+    .persona-bar {
+      gap: 4px; padding: 6px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+    }
+    .persona-btn {
+      flex-direction: column;
+      padding: 10px 4px;
+      gap: 4px;
+      font-size: 11px;
+      letter-spacing: 0.02em;
+      border-radius: 8px;
+      line-height: 1.2;
+      text-align: center;
+    }
+    .persona-btn .emoji { font-size: 20px; }
+
+    /* Section cards */
+    .section { border-radius: 14px; margin-bottom: 18px; }
+
+    /* Section hero — image on top, dark caption below */
+    .section-hero { padding: 0; }
+    .hero-image { height: 320px; }
+    .hero-caption { padding: 14px 18px 16px; }
+    .section-number { font-size: 10px; }
+    .section-title { font-size: 22px; line-height: 1.2; }
+    .section-sub { font-size: 13px; line-height: 1.45; }
+
+    .section-body { padding: 22px 18px; }
+
+    /* Fields */
+    .field-row { gap: 12px; margin-bottom: 12px; }
+    .field label { font-size: 10px; letter-spacing: 0.06em; }
+    .field input, .field select { font-size: 14px; height: 46px; padding: 0 12px; }
+    .input-prefix input { padding-left: 26px; }
+    .input-suffix input { padding-right: 28px; }
+    .input-prefix::before, .input-suffix::after { font-size: 13px; left: 12px; }
+    .input-suffix::after { left: auto; right: 12px; }
+    .field .hint { font-size: 10px; }
+
+    /* Slider */
+    .slider-wrap { padding: 14px 0; }
+    .slider-row { margin-bottom: 8px; }
+    .slider-label { font-size: 11px; }
+    .slider-value { font-size: 26px; }
+    .slider-scale { font-size: 10px; }
+    input[type="range"]::-webkit-slider-thumb { width: 26px; height: 26px; }
+    input[type="range"]::-moz-range-thumb { width: 26px; height: 26px; }
+
+    /* Result cards */
+    .result-grid { gap: 12px; }
+    .result-card { padding: 14px 16px; }
+    .result-card .r-label { font-size: 10px; }
+    .result-card .r-value { font-size: 22px; }
+    .result-card .r-sub { font-size: 11px; }
+
+    /* Reality line */
+    .reality-line { padding: 16px 18px; font-size: 14px; line-height: 1.5; }
+    .reality-line .conv-pct { font-size: 30px; }
+
+    /* Persona headline (the big number) */
+    .persona-headline { padding: 18px 20px; }
+    .persona-headline .h-eyebrow { font-size: 10px; letter-spacing: 0.1em; }
+    .persona-headline .h-value { font-size: 36px; }
+    .persona-headline .h-sub { font-size: 12px; line-height: 1.5; }
+
+    /* Ticket comparison */
+    .ticket-comparison { gap: 12px; }
+    .ticket-box { padding: 18px; }
+    .ticket-box .t-label { font-size: 10px; }
+    .ticket-box .t-value { font-size: 34px; }
+    .ticket-box .t-sub { font-size: 11px; }
+    .ticket-arrow { font-size: 28px; transform: rotate(90deg); }
+
+    /* Lift badge */
+    .lift-badge { padding: 16px 20px; }
+    .lift-badge .l-label { font-size: 11px; }
+    .lift-badge .l-value { font-size: 40px; }
+    .lift-badge .l-sub { font-size: 12px; line-height: 1.5; }
+
+    /* Compound */
+    .compound-table { gap: 10px; }
+    .compound-cell { padding: 14px; }
+    .compound-cell .y-label { font-size: 10px; }
+    .compound-cell .y-value { font-size: 22px; }
+    .compound-cell .y-sub { font-size: 10px; }
+  }
+
+  /* Smaller iPhones (375px and below — iPhone SE, iPhone 13 mini) */
+  @media (max-width: 380px) {
+    .persona-btn { font-size: 10px; padding: 9px 2px; }
+    .section-title { font-size: 20px; }
+    .persona-headline .h-value { font-size: 32px; }
+    .lift-badge .l-value { font-size: 36px; }
+    .ticket-box .t-value { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+<header class="app-header">
+  <img class="logo" src="rco-logo.png" alt="R+Co">
+  <div class="header-right">
+    <div class="step-label">TREATMENT REVENUE MODEL</div>
+    <button class="reset-btn" id="btn-reset" title="Clear all inputs and start fresh">New</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- PERSONA TOGGLE -->
+  <div class="persona-bar">
+    <button class="persona-btn active" data-persona="owner">
+      <span class="emoji">✂️</span><span>Owner</span>
+    </button>
+    <button class="persona-btn" data-persona="commission">
+      <span class="emoji">✂️</span><span>Commission Stylist</span>
+    </button>
+    <button class="persona-btn" data-persona="rental">
+      <span class="emoji">✂️</span><span>Independent Stylist</span>
+    </button>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- SECTION 1: PARTNER PROFILE                     -->
+  <!-- ============================================== -->
+  <div class="section" id="section-1">
+    <div class="section-hero">
+      <div class="hero-image"></div>
+      <div class="hero-caption">
+        <div class="section-number">Section 01</div>
+        <div class="section-title">Partner Profile</div>
+        <div class="section-sub">Who are we working with today?</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="field-row cols-2">
+        <div class="field">
+          <label>Partner / Salon Name</label>
+          <input type="text" id="i-salon" placeholder="e.g. Hair Revival">
+        </div>
+        <div class="field">
+          <label>Session Date</label>
+          <input type="date" id="i-date">
+        </div>
+      </div>
+      <div class="field-row cols-3">
+        <div class="field" id="f-fte">
+          <label>Number of Stylists (FTE)</label>
+          <input type="number" id="i-fte" placeholder="e.g. 8" min="1">
+          <div class="hint">Owner view only</div>
+        </div>
+        <div class="field">
+          <label>Days Worked / Open / Week</label>
+          <input type="number" id="i-days" placeholder="e.g. 5" min="1" max="7" value="5">
+        </div>
+        <div class="field">
+          <label id="lbl-stylist">Stylist Name</label>
+          <input type="text" id="i-stylist" placeholder="">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- SECTION 2: CURRENT REALITY                     -->
+  <!-- ============================================== -->
+  <div class="section" id="section-2">
+    <div class="section-hero">
+      <div class="hero-image"></div>
+      <div class="hero-caption">
+        <div class="section-number">Section 02</div>
+        <div class="section-title">Current Reality</div>
+        <div class="section-sub">Capture what's actually happening today. No assumptions — just real data.</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="field-row cols-3">
+        <div class="field">
+          <label>Monthly Client Count</label>
+          <input type="number" id="i-monthlyClients" placeholder="e.g. 100" min="0">
+          <div class="hint">Total clients serviced per month</div>
+        </div>
+        <div class="field">
+          <label>Monthly Treatments Sold</label>
+          <input type="number" id="i-monthlyTreatments" placeholder="e.g. 14" min="0">
+          <div class="hint">Currently — across all stylists or just this one</div>
+        </div>
+        <div class="field">
+          <label>Average Service Ticket</label>
+          <div class="input-prefix" data-prefix="$">
+            <input type="number" id="i-avgTicket" placeholder="e.g. 100" min="0" step="1">
+          </div>
+          <div class="hint">Current avg (before any treatment add-on)</div>
+        </div>
+      </div>
+
+      <div class="reality-line" id="reality-summary">
+        Enter your monthly client count and current treatment count above to see your starting reality.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- SECTION 3: THE MATH (WHAT IF)                  -->
+  <!-- ============================================== -->
+  <div class="section" id="section-3">
+    <div class="section-hero">
+      <div class="hero-image"></div>
+      <div class="hero-caption">
+        <div class="section-number">Section 03</div>
+        <div class="section-title">The Math — What If</div>
+        <div class="section-sub">Set the treatment economics. Slide the conversion target. Watch the revenue move in real time.</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="field-row cols-3">
+        <div class="field">
+          <label>Treatment SRP (Sale Price)</label>
+          <div class="input-prefix" data-prefix="$">
+            <input type="number" id="i-srp" value="35" min="0" step="1">
+          </div>
+          <div class="hint">What the salon charges for one treatment</div>
+        </div>
+        <div class="field" id="f-cogs">
+          <label>COGS (Wholesale Cost)</label>
+          <div class="input-prefix" data-prefix="$">
+            <input type="number" id="i-cogs" value="6" min="0" step="0.50">
+          </div>
+          <div class="hint">R+Co treatment wholesale cost</div>
+        </div>
+        <div class="field" id="f-commission">
+          <label>Stylist Commission %</label>
+          <div class="input-suffix" data-suffix="%">
+            <input type="number" id="i-commission" value="40" min="0" max="100" step="1">
+          </div>
+          <div class="hint">Avg (Blended) % of Service Revenue paid</div>
+        </div>
+      </div>
+
+      <div class="slider-wrap">
+        <div class="slider-row">
+          <div class="slider-label">Target Treatment Conversion</div>
+          <div class="slider-value"><span id="o-targetPct">10</span>%</div>
+        </div>
+        <input type="range" id="i-target" min="1" max="50" value="10" step="1">
+        <div class="slider-scale">
+          <span>1%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span><span>50%</span>
+        </div>
+      </div>
+
+      <!-- PERSONA-SPECIFIC HEADLINE -->
+      <div class="persona-headline" id="persona-headline">
+        <div class="h-eyebrow" id="ph-eyebrow">Annual Lift at Target</div>
+        <div class="h-value" id="ph-value">$0</div>
+        <div class="h-sub" id="ph-sub">Run the numbers above to see what's possible.</div>
+      </div>
+
+      <!-- Result cards row 1: VOLUME (always shown — count of treatments) -->
+      <div class="result-grid cols-3" style="margin-top: 20px">
+        <div class="result-card">
+          <div class="r-label">Monthly Treatments at Target</div>
+          <div class="r-value teal" id="o-monthlyTreatments">0</div>
+          <div class="r-sub" id="o-monthlyTreatmentsSub">treatments per month</div>
+        </div>
+        <div class="result-card" id="rc-monthlyRev">
+          <div class="r-label" id="lbl-monthlyRev">Monthly Treatment Revenue</div>
+          <div class="r-value teal" id="o-monthlyRevenue">$0</div>
+          <div class="r-sub" id="o-monthlyRevenueSub">gross sales</div>
+        </div>
+        <div class="result-card" id="rc-annualRev">
+          <div class="r-label" id="lbl-annualRev">Annual Treatment Revenue</div>
+          <div class="r-value teal" id="o-annualRevenue">$0</div>
+          <div class="r-sub" id="o-annualRevenueSub">over 12 months</div>
+        </div>
+      </div>
+
+      <!-- Result cards row 2: NET — what THIS persona takes home -->
+      <div class="result-grid cols-3" style="margin-top: 14px">
+        <div class="result-card black" id="rc-monthlyNet">
+          <div class="r-label">Monthly Take-Home <span id="netLabelHint"></span></div>
+          <div class="r-value" id="o-monthlyNet">$0</div>
+          <div class="r-sub" id="o-monthlyNetSub"></div>
+        </div>
+        <div class="result-card black" id="rc-annualNet">
+          <div class="r-label">Annual Take-Home <span id="netLabelHint2"></span></div>
+          <div class="r-value" id="o-annualNet">$0</div>
+          <div class="r-sub" id="o-annualNetSub"></div>
+        </div>
+        <div class="result-card green" id="rc-annualLift">
+          <div class="r-label">Lift Over Today</div>
+          <div class="r-value green" id="o-annualLift">$0</div>
+          <div class="r-sub" id="o-annualLiftSub">annual lift opportunity</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- SECTION 4: POWER OF ADD-ON SERVICES            -->
+  <!-- ============================================== -->
+  <div class="section" id="section-4">
+    <div class="section-hero">
+      <div class="hero-image"></div>
+      <div class="hero-caption">
+        <div class="section-number">Section 04</div>
+        <div class="section-title">The Power of Add-On Services</div>
+        <div class="section-sub">One add-on. Same clients. Watch your average ticket move.</div>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div class="ticket-comparison">
+        <div class="ticket-box now">
+          <div class="t-label">Today</div>
+          <div class="t-value">$<span id="o-currentTicket">0</span></div>
+          <div class="t-sub">avg ticket (no treatments)</div>
+        </div>
+        <div class="ticket-arrow">→</div>
+        <div class="ticket-box future">
+          <div class="t-label">With Treatments at Target</div>
+          <div class="t-value">$<span id="o-newTicket">0</span></div>
+          <div class="t-sub">new avg ticket</div>
+        </div>
+      </div>
+
+      <div class="lift-badge">
+        <div class="l-label">Average Ticket Lift</div>
+        <div class="l-value"><span id="o-ticketLiftPct">0</span>%</div>
+        <div class="l-sub" id="o-ticketLiftSub">Same clients. Same chairs. One conversation.</div>
+      </div>
+
+      <h3 style="font-size: 18px; font-weight: 700; margin-top: 32px; margin-bottom: 8px;">3-Year Compound View</h3>
+      <p style="font-size: 13px; color: var(--gray2); margin-bottom: 14px;">Holding target conversion steady. Same client volume. The compound impact.</p>
+
+      <div class="compound-table">
+        <div class="compound-cell">
+          <div class="y-label">Year 1</div>
+          <div class="y-value" id="o-year1">$0</div>
+          <div class="y-sub">added revenue</div>
+        </div>
+        <div class="compound-cell">
+          <div class="y-label">Year 2</div>
+          <div class="y-value" id="o-year2">$0</div>
+          <div class="y-sub">cumulative</div>
+        </div>
+        <div class="compound-cell">
+          <div class="y-label">Year 3</div>
+          <div class="y-value" id="o-year3">$0</div>
+          <div class="y-sub">cumulative</div>
+        </div>
+      </div>
+
+      <!-- Persona-specific Monday playbook -->
+      <div class="playbook" id="playbook">
+        <div class="playbook-title" id="playbook-title">Your Monday Playbook</div>
+        <div id="playbook-items"></div>
+      </div>
+
+      <!-- BUILDING A TREATMENT CULTURE — the deeper roadmap below the Monday Playbook -->
+      <div class="roadmap" id="roadmap">
+        <div class="roadmap-eyebrow" id="roadmap-eyebrow">The Long Game</div>
+        <div class="roadmap-title" id="roadmap-title">Building a Treatment Culture</div>
+        <div class="roadmap-sub" id="roadmap-sub">Your roadmap to integrate Treatments as a permanent part of how the business runs.</div>
+        <div id="roadmap-items"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Action bar: Reset + Export PDF -->
+  <div class="action-bar">
+    <button class="action-btn secondary" id="btn-reset-2">Start Over</button>
+    <button class="action-btn primary" id="btn-pdf">Download Takeaway PDF</button>
+  </div>
+
+  <!-- Footer brand mark + legal -->
+  <div style="text-align: center; margin-top: 28px; padding: 8px 0 4px; color: rgba(0,0,0,0.45); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700;">
+    Powered by R+Co
+  </div>
+  <div class="legal-footer">
+    © 2026 R+Co / R+Coach. All Rights Reserved.<br>
+    <strong>PROPRIETARY &amp; CONFIDENTIAL · TRADE SECRET PROTECTED.</strong><br>
+    The R+Coach® system — including the Treatment Revenue Model methodology, persona-specific calculations, the diagnostic-to-prescription framework, and the Building a Treatment Culture roadmap — is the confidential intellectual property of R+Co / R+Coach. Reproduction, reverse-engineering, redistribution, derivative use, or incorporation into any competing product or service is strictly prohibited without prior written authorization. Authorized solely for use by licensed R+Coach Brand Managers and contracted partner salons under the terms of their executed agreements. Unauthorized use will be prosecuted under the Defend Trade Secrets Act and applicable copyright and trademark law.<br>
+    <span class="build-id" id="legal-build-id"></span>
+  </div>
+
+</div>
+</div>
+
+<script>
+// ========================================
+// STATE — defaults
+// ========================================
+const DEFAULT_STATE = {
+  persona: 'owner',
+  salon: '', date: new Date().toISOString().split('T')[0], fte: '', days: 5, stylist: '',
+  monthlyClients: 0, monthlyTreatments: 0, avgTicket: 0,
+  srp: 35, cogs: 6, commission: 40, targetPct: 10,
+};
+const STORAGE_KEY = 'rco_treatment_model_v1';
+
+// Load saved state from localStorage (if any)
+let state = { ...DEFAULT_STATE };
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    state = { ...DEFAULT_STATE, ...parsed };
+  }
+} catch (e) { /* ignore */ }
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+// R+Co logo embedded as base64 data URL — bulletproof against file:// CORS,
+// Safari security restrictions, and async timing issues. Embedded inline so the
+// PDF logo renders reliably regardless of how the app is served.
+const _logoDataUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAHDCAYAAAD4L2TBAAABY2lDQ1BrQ0dDb2xvclNwYWNlRGlzcGxheVAzAAAokX2QsUvDUBDGv1aloHUQHRwcMolDlJIKuji0FURxCFXB6pS+pqmQxkeSIgU3/4GC/4EKzm4Whzo6OAiik+jm5KTgouV5L4mkInqP435877vjOCA5bnBu9wOoO75bXMorm6UtJfWMBL0gDObxnK6vSv6uP+P9PvTeTstZv///jcGK6TGqn5QZxl0fSKjE+p7PJe8Tj7m0FHFLshXyieRyyOeBZ71YIL4mVljNqBC/EKvlHt3q4brdYNEOcvu06WysyTmUE1jEDjxw2DDQhAId2T/8s4G/gF1yN+FSn4UafOrJkSInmMTLcMAwA5VYQ4ZSk3eO7ncX3U+NtYMnYKEjhLiItZUOcDZHJ2vH2tQ8MDIEXLW54RqB1EeZrFaB11NguASM3lDPtlfNauH26Tww8CjE2ySQOgS6LSE+joToHlPzA3DpfAEDp2ITpJYOWwAAAARjSUNQDA0AAW4D4+8AAACKZVhJZk1NACoAAAAIAAQBGgAFAAAAAQAAAD4BGwAFAAAAAQAAAEYBKAADAAAAAQACAACHaQAEAAAAAQAAAE4AAAAAAAAAkAAAAAEAAACQAAAAAQADkoYABwAAABIAAAB4oAIABAAAAAEAAAJYoAMABAAAAAEAAAHDAAAAAEFTQ0lJAAAAU2NyZWVuc2hvdLRH8rAAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAKnaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJYTVAgQ29yZSA2LjAuMCI+CiAgIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOnRpZmY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vdGlmZi8xLjAvIgogICAgICAgICAgICB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyI+CiAgICAgICAgIDx0aWZmOllSZXNvbHV0aW9uPjE0NDwvdGlmZjpZUmVzb2x1dGlvbj4KICAgICAgICAgPHRpZmY6WFJlc29sdXRpb24+MTQ0PC90aWZmOlhSZXNvbHV0aW9uPgogICAgICAgICA8dGlmZjpSZXNvbHV0aW9uVW5pdD4yPC90aWZmOlJlc29sdXRpb25Vbml0PgogICAgICAgICA8ZXhpZjpQaXhlbFlEaW1lbnNpb24+NTYyPC9leGlmOlBpeGVsWURpbWVuc2lvbj4KICAgICAgICAgPGV4aWY6VXNlckNvbW1lbnQ+U2NyZWVuc2hvdDwvZXhpZjpVc2VyQ29tbWVudD4KICAgICAgICAgPGV4aWY6UGl4ZWxYRGltZW5zaW9uPjc0ODwvZXhpZjpQaXhlbFhEaW1lbnNpb24+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgoQKpQ/AABAAElEQVR4AeydB6AVxfX/R0BBBMRCkY4NxQgiamwo2PWnxthiN9EUY0vVGDW/xFjyS2JMMfGX/y8mGrtGY4u9994VsIEIAoIKKDZQ3n8/8zjXfZf73rvvvd25u3e/A/t27+7snDPfmT1z5szMmeWcczOjQ0EICAEhIASEgBAQAkIgIQSWi9JpSCgtJSMEhIAQEAJCQAgIASEQIdBJKAgBISAEhIAQEAJCQAgki4AUrGTxVGpCQAgIASEgBISAEJAFS3VACAgBISAEhIAQEAJJIyALVtKIKj0hIASEgBAQAkKg8AhIwSp8FRAAQkAICAEhIASEQNIISMFKGlGlJwSEgBAQAkJACBQeASlYha8CAkAICAEhIASEgBBIGgEpWEkjqvSEgBAQAkJACAiBwiMgBavwVUAACAEhIASEgBAQAkkjIAUraUSVnhAQAkJACAgBIVB4BKRgFb4KCAAhIASEgBAQAkIgaQSkYCWNqNITAkJACAgBISAECo+AFKzCVwEBIASEgBAQAkJACCSNgBSspBFVekJACAgBISAEhEDhEZCCVfgqIACEgBAQAkJACAiBpBGQgpU0okpPCAgBISAEhIAQKDwCUrAKXwUEgBAQAkJACAgBIZA0AlKwkkZU6QkBISAEhIAQEAKFR0AKVuGrgAAQAkJACAgBISAEkkZAClbSiCo9ISAEhIAQEAJCoPAISMEqfBUQAEJACAgBISAEhEDSCEjBShpRpScEhIAQEAJCQAgUHgEpWIWvAgJACAgBISAEhIAQSBoBKVhJI6r0hIAQEAJCQAgIgcIjIAWr8FVAAAgBISAEhIAQEAJJIyAFK2lElZ4QEAJCQAgIASFQeASkYBW+CggAISAEhIAQEAJCIGkEpGAljajSEwJCQAgIASEgBAqPgBSswlcBASAEhIAQEAJCQAgkjYAUrKQRVXpCQAgIASEgBIRA4RGQglX4KiAAhIAQEAJCQAgIgaQRkIKVNKJKTwgIASEgBISAECg8AlKwCl8FBIAQEAJCQAgIASGQNAJSsJJGVOkJASEgBISAEBAChUdAClbhq4AAEAJCQAgIASEgBJJGQApW0ogqPSEgBISAEBACQqDwCEjBKnwVEABCQAgIASEgBIRA0ghIwUoaUaUnBISAEBACQkAIFB4BKViFrwICQAgIASEgBISAEEgaASlYSSOq9ISAEBACQkAICIHCIyAFq/BVQAAIASEgBISAEBACSSMgBStpRJWeEBACQkAICAEhUHgEpGAVvgoIACEgBISAEBACQiBpBKRgJY2o0hMCQkAICAEhIAQKj4AUrMJXAQEgBISAEBACQkAIJI2AFKykEVV6QkAICAEhIASEQOERkIJV+CogAISAEBACQkAICIGkEZCClTSiSk8ICAEhIASEgBAoPAJSsApfBQSAEBACQkAICAEhkDQCUrCSRlTpCQEhIASEgBAQAoVHQApW4auAABACQkAICAEhIASSRkAKVtKIKj0hIASEgBAQAkKg8AhIwSp8FRAAQkAICAEhIASEQNIISMFKGlGlJwSEgBAQAkJACBQeASlYha8CAkAICAEhIASEgBBIGgEpWEkjqvSEgBAQAkJACAiBwiMgBavwVUAACAEhIASEgBAQAkkjIAUraUSVnhAQAkJACAgBIVB4BKRgFb4KCAAhIASEgBAQAkIgaQSkYCWNqNITAkJACAgBISAECo+AFKzCVwEBIASEgBAQAkJACCSNgBSspBFVekJACAgBISAEhEDhEZCCVfgqIACEgBAQAkJACAiBpBGQgpU0okpPCAgBISAEhIAQKDwCUrAKXwUEgBAQAkJACAgBIZA0AlKwkkZU6QkBISAEhIAQEAKFR0AKVuGrgAAQAkJACAgBISAEkkZAClbSiCo9ISAEhIAQEAJCoPAISMEqfBUQAEJACAgBISAEhEDSCEjBShpRpScEhIAQEAJCQAgUHgEpWIWvAgJACAgBISAEhIAQSBoBKVhJI6r0hIAQEAJCQAgIgcIjIAWr8FVAAAgBISAEhIAQEAJJIyAFK2lElZ4QEAJCQAgIASFQeASkYBW+CggAISAEhIAQEAJCIGkEpGAljajSEwJCQAgIASEgBAqPgBSswlcBASAEhIAQEAJCQAgkjYAUrKQRVXpCQAgIASEgBIRA4RGQglX4KiAAhIAQEAJCQAgIgaQRkIKVNKJKTwgIASEgBISAECg8AlKwCl8FBIAQEAJCQAgIASGQNAJSsJJGVOkJASEgBISAEBAChUdAClbhq4AAEAJCQAgIASEgBJJGQApW0ogqPSEgBISAEBACQqDwCEjBKnwVEABCQAgIASEgBIRA0ghIwUoaUaUnBISAEBACQkAIFB4BKViFrwICQAgIASEgBISAEEgaASlYSSOq9ISAEBACQkAICIHCI9Cl8AhUAUCnTp1cz549fczPP//cNTQ0VPFWY5TllluuYtwlS5Ysc5+4Ft/ORIKeHcu8tPRGPH78urn47b1vfBgNznbNM67B6LPPPvM8k09+E3hGHAUhIASyi4B9p507dy59u81xa3F5jpxcfvnlXbdu3VyXLl0c7xOQAYsWLXKffvqpW7x4sf/N/fi78WueEXifdyUzGvHQ3/whIAWrijL78pe/7A444AC3wgortKrolCdnwsHOjc9RSspjxn5HOoipIcSzdzkjiCxwHf9t9y2+/U7ybDzEaZT4gOmIPRQqhOknn3ziPlv8mVv82eKScJ09e7Z7/vnn3dy5c32+ELwLFy5MkkWlJQSEQAcQsG+b7ziuLHXv3t0NHDjQDR482PXt29f17t3bcc9kEAoR8bm34oorenkJGyhVH3/8sfvoo48aZULU+SLQCePbf//99917773nXn75ZffOO+/4+9DmmfHiX9AfIZAzBKRgVVFgm266qTvmmGNKPbIqXlGUZhD44IMP3KxZs7wgReC+8sor7vbbb/f3uP/WW2+VerjNJKHbQkAItBMBlCFTWuzaziSJcjR06FDXr18/r0Qh+4YPH+6vV155ZdejRw/HGeXKLFTtZKX0GooWShadLuTDB+9/4ObMneMefPBBN3nyZDd//nwvH5ANlYIpeDyzvFWKp3tCIDQCmEPMWBKadm7ofec733Fnn322675i1Fvr1NSC1Fom9ME3IhQXgnHMTLjOmzfPPffcc+7xxx93L774onviiSe8sKXnqyAEhEAyCDB0x7AbBwGLU9euXd2XvvQlN3LkSLfWWmu5zTbbzP/mPpYohv2aC8g3k3H2jdvZ7vNuS/cqpY0F68MPP/QWr/fefc898+wz7qmnnnKvv/66lxHvvvtuabiRtO2wfJFmnH4lGronBNJGQApWFQiXFKyYOZzXTGi0lIQ+8pbQacQQocj8Dc4MJ8yY8ZZ76aUXo+Mld+2117o33njD925bTklPhYAQqAYBLE9YqPr06eO++tWvuvXWW8+NGDHCK1dYsMotU0uW0Adv2g+Pyz6TcXbPznYfnlq6x3PixuNzj2DvcU1n7O233/ZywSzfdMpQtrCGW7B3KqVncXQWAiEQkIJVBcpSsKoAqQNRTLhyNuGOkFy48MNoyHCGt2hdcMEFburUqW7SpEleEPPcBGj8ugNs6FUhUNcIYJHaaKON3MYbb+x23313N2zYMDdkyBC30koreUXGviff4VmuU6RSRUpV4/8Il2XnfxpY9p4pNna2+8Rr6R7PiRuPzz0LWLPogJls4D4dsZkzZ/rjnnvucXfccYebMmWKe/PNN+01/05L6ZYi6kIIpISAFKwqgG1OwariVUXpAAImlEmC4QIEKsL0b3/7m3vyySdLKSN8idteYdqcYC8R0IUQyCECZhVmcc6uu+7qDj74YDd+/Hi36qqrNlFWqqn/xIl/j5XgaO15+TvV0I2/01z6pLNgwQLf+br//vu9fGAokfy3lUacXkvXaaXbEk09yx8CUrCqKDMpWFWAlHIUE670rpnset111/l5cTNmzPBDi8wtoafbniBh2R7U9E7WEcC1DJYq5BdzrFZbbbUSyw3RsB/1Pj6ntPSwnRf2jVb7elu/u0rp+zxEnSsL/H5z2pvumn9f437961+7OXPm2KNWFcRSxCou2sp7FUkqSh0igKOSX9RhvhLN0iabbOJ22mknP9mz0keeKDEltgwCCDM7wJ9VTLjO2H///f3wBkMDrEIyoacyWgZC3ahjBMrrO0N+2223nfvtb3/rfvzjH7s111zTT1YnnnVCsO7gUiXpUM5LkulXSpt7fPd0vAj87r1Kb7fFFlu4ww47zLt/QDawiMYCQ40mK+yezkIgDQSkYFWBqhSsKkBKMQpCs1y48rtXr15uwoQJbsyYMd7nDj62WOZdHjdF1pS0EKgpAtR1UxaYoL7LLru4o48+2v3xj39066yzTulbsG+i/FxT5ttI3Hiv9BrP4s/BBDz22msvN27cON85xq8W/rYIFt+wq5Sm7gmBjiIgBasKBKVgVQFSgCgmFI0UwpGVRSwt33nnnf0ycya/Tps2zXuOjgtce0dnIVBvCOBqAYvNz372M3fyySe7rbfeumTRsbzGv4X4tT3Pw7ktfBMX+YBlC+eou+22m9tyyy0jS15371uLVYfmsiIPeReP+URAClYV5SYFqwqQahAlLnAx+6+77rrehw9OEHHtYL1VPxxSA/5EUgikjcDwyAnoUUcd5X74wx/6aQz4rUKpQLmw78POafOSdvptyQdxLb7hMWDAALf55pv7uWjcY8UhHTTipTkhPm1clH52EZCCVUXZSMGqAqQaRYkLUq5RrjbbdDNvzcIzNBPisWrxLD4cwG8FIZBXBLC+fOUrX3GnnnqqO/TQQ/32NeTFvgcUBrvOax7L+W7um7V8xs/xd62DxfePAop3eoYNmcv52muv+RWI8fi6FgJJISAFqwokpWBVAVKGonTq3MmtvfbafkiAeVoPPfSQn9wb76U2J6wzlA2xIgQqIrBcpDwdd+yx7pe//KWff2hDXaZgVHypDm6255ut9A4rKFdZZRWvaDFPjSkFuICJW/3qAC5lIQMISMGqohCkYFUBUoaiIFQRlixL32qrrbwzxYcfftj70oJNe54hlsWKEFgGAeopylM84CT0V2ed5b73ve/5+s1m6sQzi1U8LvfrKbQ1P8S3AxxK7+OUPoKGLYDWX399t+OOO/oFM+x7yER44iE/rENWeq+ewFRegiAgBasKmKVgVQFSxqKYUGRuFqsMceuAzyy8wSsIgbwgQEPPQTjym0e63539O++CoUvnLo1KQGSttbpuZ8tb+W+7n9dzUvmJp8M10wqYm8WWQY899pjfXNri2PBiXjET37VFQApWFfhLwaoCpIxGQVAyJDBs+DA3PvJijRuHZ599ttRoZZRtsSUESgjgiZ09A8/53Tlu6NChjXUX41SZgcqUAnux/Lfdz+s5zfxgKcSaxVZCLJCZPn26ZEReK0qG+JaCVUVhSMGqAqSMRqH3j2DmYFIrAhQrFpNbWUmUptDOKCRiK0cIMMz9rW99y8+3WqP/Gm5JQ6NDzUpZKK/L5b8rvZOneyHyM2zYMG/NYgPpl19+2c/dNMekJkvyhJl4rS0CUrCqwF8KVhUgZTQKQtkEMwKS4QBWEOHdeeLEiSXP1havmnNGsyq26gwBFmqcdNJJ3gUDilZzypXV2TrLftDs2DAsRPv27eut3QwPsucpq5AJJkf8D/0RAlUgIAWrCpCkYFUBUoajxAUjW4VgyWLOBb3UF154oeQLJ8NZEGsFQwDnuWeeeaY74IADvEfyxi1u6CwsC0S8fi/7VHfaigDKFtsN4bwVJeuJJ57wjotJR1i3Fc1ix5eCVUX5S8GqAqQMRykXigwN9ujRwytZzMmil0qwVUPWmy1/L8NZFGs5RyBe1wYPHux+8YtfuAMPPNBvAUV95Hkl5Ypsx9/NOQw1Yz+OIXgjI7p27eodF7PlDkrWJ598UpIRNWNUhHOFgBSsKoqrnhSsRkHdOGxWy+sqYE8sSlx4kii/EaD0UjfbbDPHHobPPffcMg1V+XuJMaSEhEAzCKBcnX766W7fffctbS5v3ymv2HX83ExSut1GBAxTXuMaRYsFBszbZDsiOmIff/yxV7LamLSiFxQBKVhVFHy9KVhVZLnFKGbhIRKCKOuhEo9mrUJwbr/99n4I4JFHHmmSlUrvNYmgH0IgQQRGjhzp/vD7P7h99tnHN+LUUdXBBAFuR1KmZNEG9O/f391///1eyWpHUnqlgAhIwaqi0OtJwaoiu6UolYR7XLkqRVx6USl+eZxa/Da+Kp25xyqhsWPHOjaApZdq8eK8VroXf65rIdARBJjEftppp3nlqnMXxHLjkHW83nFd6egIXb27LAJxjO0pbhw23HBDLyuefvppr2QhN8wRbEty0dLQuXgISMGqosylYDUFKS5MyhuApjGz8SvOYzlHPMNPVs9ePd0GG2zgfeDg0RnhGQ8tpRGPp2shUC0CVqeY44MrhmOj7W+Y98P3Zc/sXG2aipcsAnH8sShuueWWfnoB1u5FixZ5OUF5xWVishwotTwj0CnPzNc773zctTwq4Wv8VHqW13tYDJiTxfyXI444wm+tw6otCc28lmh++F5+heX9ZPYf/ehHfiNi6qFCNhEwRerkk0/2WxWxcTQuHFRm2SyvLHDVdKOrLHAkHjwCKDIMWeFKgA+53KJCJOIQ0lIESN/SpveGOZz9u4wXOxsPjUvJG/kxRcx49IxGf+y3ne1+a2fjo7V4rT1vji7pk5/ddtvNnXjiie6MM87wk99bS0/PhUB7EWACNW4YWDGIE9HPPvvMsVF5c3W9ubrbXvodeQ8ev+CTvRAbO4OV0rS4yBACCgl54bA0OGcpf5XywT3j+ec//7nfvxA5gZy2/EjZag65Yt6XgpXBcudj/fTTT92//vUvd/3113vLigknY9eEFr/j1/a8o2d4MAUK2ih5djCMweRwnnNvwIABfgsPXB8w3IEiFonPJqttTJBW4iv+DLqhQ5O8Rg3c4Ycd7t5++213zjnnlDaIDs2T6NU/AmxEjiPRQYMGuSWfL/HKVZZzHf82UQb5bj+P+P7000/8JsnskECHkKEzDlM2eA8Zgmzo16+fGzhwoFtllVVKnTWee5mx9NuPy4NyPOxZnJfyOGn/hgdkIBtuvxFtq/P3v/+9RBK+jMfSTV0UFgEpWBktevwzoVxde+21XviYsCpnty2Cpr0fPjRMwbPep/1G0AwZMsRvlNqrVy/vBRkP1CNGjPCKIU49uW/KWjn/WfuNYtijZw/3zW9+091+++1+89e2YJy1/IifbCFgDTDKxne/+13/nZjll7pHqHV9Q04YD3aGL5Qq5NKHH37o3Zo888wz3sq7cOFCvzMCW8vMmTPHdw5NwSItZAUHnTGUSZyoomBhwRs+fLjfjH3NNdf0sqNnz54l2uXyqvw3PNUqMDRIGf70pz91s2bNcjfeeGOtWBHdDCMgBSujhYMig0Aj2LmWrMJPJQGHIH3ppZf8AX8MIbIdzeqrr+4QluxQv/XWW/uGBEVs2LBhpWwwudyHmNEqTiMu3OPXpQSauYinQZTy3+WvladNfHhFeH7/+99306ZN8w2EKbnEby3Nchr6LQQMARSLo48+2u2+++7+ltU/O1u88nO8zsXjxq/L32nPb+tEWbozZszw+3ey68G9997rZs6c6ZUKFAv8QpUHey/OL3Fw1Dlv3jy/e4K9gy86LODICxaZbLvttm7dddf1B3KEYPzYO5zjaRu9+PM0rqFjdOkwohgjz5iTNWnSJL+/aRp0lWa+EaCV09ECBt/5zncaop5bQ/RBNUQfe+pH9BE3RD3Bhj333LMuyiXquTZEPdaGTTfdtOG4445ruO666xo++vAjstnw+Wefe1zBthxfH6Edf9paRuUk4u9fcsklDZGi2BAJ14aoF+7PXOubkcxoTx2ILL4NP/jBDxqivTC9HInX+ZbqYbxOcp1miDp0Pvnnnn2uIVIeGqIOkv9++Y7bk+dq3+H7ihSuhmgvwIa999674b//+78bnnrqKY8TDCEr4I3D5EUcv3KM0vwdpw8/d9xxR8OoUaNSxadaHBUvU7IpU8xksoJKwUqujqCcRD3Whh122KHhz3/+c8PcuXO/EKAxBRYB1t7QVsFaTsfeh4eo192w8847+3pJA8AhAZZcfSgaltT9d955x1c5a6StvpXXQ37bs/JzpbhJ3Ysstg2nnnpqQ2R9boisbTWr79G8LK+0RP7BGiJrWcNniyPFL9ItW+qUleOU1m8rO87QQMn697//3RDNMasZXkX7lnKSXwnL1gpKClb76wgKVfyIY40AjeZkNESTRBuiYYhS+xANOzZEcxyaNC6lh1VctFWoNpckfBBeeeUVrxQ2l494nnTd/rpSr9hRb8hbNGen4a677vKNcbSIxddxa6Cps5VCc3W5Uty23iNto8+706dPb0CZiTyWN/BtwjO8m+W2VuUDfRTT888/vyFafFLKJt+n8d8cTmnfhz4H4b335jUcfPDBUrBaGA2qVR2qFV35wYqQVwiHQCSwS0uao16fn89x5JFHuh133NFdccUV7r333vPzuFhVVMsQyUs/74rzOuus4+fLcG1HLXkT7XwicNRRR/kJ3czfYR5WpDjUNCN8iwQmpl900UVuu+22c7gf4LfVf4tTS0YjJcnLCRaefPWrX3X/+Mc//Fwu5ntmgT+wiaxq0cT93u7447/ncEytIAQMAWncrWjcsmC13yoRCcAmFix+RxWv4hE1PA2HHXZYQ7TfV0O0UslbsKyHGgn8qkNbe63NJQxtTP8MTWBh+/KXv+z5pkfdXB50v3LZFg0Xq/eW78glQ8Orr77q6xP1k2DWD6uvleqhPSs/V4pbfi/+jj3jnoVFny5quPXWWxv22muvBptfRd3mO+TMYflo6bu1PIY8M0frzjvvbIgm2fvslGMZz3ua10YXGeGHMCNu7r777oZoX0nJiGbkfMh6Umta2ionKoHWQuitciJh5p3X3XDDDY6lz/UeyC9HJAj9CiNWKnHN5rcshY5kVhMIiJtkqJQeNEv3I3LwgUsKbfaaJPL1mxZWKuoP9SiatO39XWEhKtWpKOtcl/+uFpH4e5Xega59N/G4kULgLWe4WrjqX1e5U045xT300ENNVirbe+XpGr/Nncvjp/Hb8sKqvWi41VsCWanMt0mw52nQrpSm0Ytjwgpk3Dg8+OCDfqUhz5rDtFKaulc/CEjBqqIspWBVAVJCURBELOV+9NFHvfNClm6zXNsEGWTi10mQbS29qBn0jRIN5ZSpU9zEiRMlMJMAvo7TsDrFObK2uG9/+9vebUlLWbZ3Wopjz9oSl3eIzxFZpdybb77pzj77bPfb3/7WX7eUVkvPjJdanfHJ9fDDD3t50adPH7fGGmvUfNgV+QXGuJrAvctzzz3nf0vBqlUtqS1dKVhV4C8FqwqQEopiDQHzsx5//HHvwNCcEFYikUQDUE0axMFnD8dtt91W2h6jEk+6JwSoL1hh8fHEPoORi5JWlfJq6qEh25a4vEN8jueff95vBXXxxRd7p6EoA/bcX5T9aSudstdT/Qlv7Hjx9NNPO5ye0hHD6l1LnvFsT7mzq8Vqq63mrr76as9jqkAo8cwiIAWriqKRglUFSClEQVDRIDzwwAPeG3zkZ6Zkcq9Err2CtdJ7do8zBz1Qhn0QmgxP2NBtPF4lnnSvuAjgrfyHP/yhi1aW+d0YWkPC6lJr8XjeWlx7bmcUqWhukDvmmGO8s1Dqsz0zevwuP+xZ1s7GO2fkxFtvveWHOlFo119//aA7R5RjBtbgO3ToUN8hY6iQIUOF4iFQ22UsxcNbOa4SATOpY8lCycJbMnszouTYMz+dusr0koiGIKfRjHx4ecHJ7xIvSRBQGnWDAPViWOTlO5pA7reICZUx6NphNGnwGar6yU9+4q09ppzY87yfTcHBszx5vOCCC9ynn3y6jAIZOp/gztAw8kKhmAhIwSpmueci1wgoW87OvJHf/OY37qEHHyr1TssbkhCZQphvv/32bssttwxBTjRyigBDRGwGjIsP6mmtAvU18sjuLWlPPvlkyUJVK37SpEte2dbnhBNOcBdceIG3GnGvVoEOGItjIo/0LvIt5tmoJT+1wqHIdKVgZaz0TRhzto/RzhljNXV2EFDsdcgZDJ599ln3+z/83vvEQflaujduh/kwRa38HE8Y+hzwMjzaoJb9FRGeCkLAEKBOYmElbLTRRm7cuHFtmnRdXv/43VyIx7U4TeIvdRLw2muvuR+f8GM/PGhyxOLF00ji2vgIcW6OX2gvWLDAW7KinSLapGTZNx4/tzUv8Xe5hs/Ro0d7JYvf1BEOi9fW9BU/XwhIwcpXeRWSW4QRgeFCdq3/wx/+4FcOLYkmlCLAQgeWuu+zzz7uS1/60jLDMaF5Eb1sIYACzkIIrCgszghdP03xWK7Tcu7lV152ODeN/EUto+iF5it0KUV7Pbpoux933nnn+U2mTYaE5gN6KN077bSTd1aM7KCOKBQDASlYxSjn3OfSen9MFv3rX//qrrzySrf4s8Ulq1KoBsN6n8Oi+TW77bab69atW+6xVQaSQcCUm7Fjx/p5N7VoSKO9+vw3gZ8rOiL4iqqlcpEMsu1L5aOPPnK/+tWv/NxNLOG1DCjbBx54oJ/DCR+h5FUt8yzazknBUi3IPALWcJlQwv/N3/72NzdlyhTfM48/tzhJZIqGqfwgXZQsHBtGm0D7peFJ0FIa9YEACjdbPzF8HFqx8XU/MvZyjjYe9ltPgSp82HfB2a7rA/GWcxHtXeiH56699toWVyC3nErHnoI3ZTB+/Hg/bGypFakcLM9FO0vBKlqJ5zS/8YYBYcWqKBwlvvvuu6V5L6GzxnLwXXbZxZMN3ZiGzqvotY4AdZS5V/vuu2/NhoEYjrr55pv98BhzkZqsum09C3UZ44033nDRJtbuuuuuq1m5ACwT3Q866CA3LLJ+00mz+Xp1Cboy5RGQgqWKkEsEmMvAMOEll1zie4c2dBdS0Vl55ZXdhO0mePxqMRyUy4KrM6apb9Q9C7gJwIrFfEFCvGNgcZI+Q4P6Zx0PVi+y6pbf3A/BQ9J5Sjo9fNehZOHyBVw4Qgdo7rfffu5rX/ua94tGuSjUNwJfSIb6zqdyV2cIIKzw4vy///u/burUqTURmEC6+Wabu7XXXrvO0FV2qkGAOohyZQrWV77yFb+6lIYzlOUIBSp+MKmb78F4Ih/wyVHkQP5Rsi677DL33nvvedlBJy1kYB4Yi3RYdGCKb0j6ohUeASlY4TEXxQQRwKP6PffcU7N5JeuOWNcvw04wS0oqJwigSNFIczAnDwVr9dVXb6J0pZ0VrzhFhhDOv/71r71FV5aRpqjHlctzzz3XXXTRRb6M4vebvpHcL2hw4C7j+9//vh8iZGsf6kwI+snlRCm1BwEpWO1BTe9kCgHmYs2eNdvzROOStuW9kcYXk4Xxc7P88stnChMxEw4B6sOuu+7qtttuu1IdDGUdoZHu3KWze+mll/yQOSvnuCcl64vyNyywGn3yySfu9NNPdzfccEOjlS/ymMDKy6SC0aIMOGbPnu2VXuZqYm2HPtbFUBbOpPKldNqHgBSs9uGmtzKAAAKMwK71119/vTe7L160OGpckvEzg7Bs7YA+22HgfFShmAjg9woFa8iQIR4A6iUNqDWyVk/TQmfevHnuH//4h5s4caKsIs2AbN8xZcEQ4c9+9jO/n+hynSNlNPqXZBmRFmXChtp77LGHO/TQQ93rr7/uFSv4QNELpYA3A4duB0JAClYgoEUmPQToFV551ZWOJdk4WESAhQz9+vVzY8aMCUlStDKEAKvD2DqJhpUGNGSA5hNPPOFuueWW0sT6kPTzSAvMXn31VXfOOed4zPhtc6I6Un6kg+JEefz4xz/2B9sTEXjWkbTziLN4lh+szNYBPkgL+jANicpn8GGI5J577vZDdaGWP5tghiucjmL6556dK3Oru/WEAGW98cYbuwEDBgTNFnWeA0vJNddc4+f4xGVGUGZyRMxkKas8wQ2XFpRhPBi2Fjf+LH6NUsYB7hz45fvjH//ojj32WHfhhRe6OXPmlCyZ8fd0XRwEuhQnq/nIaVxItvaB5yNHYbjEH9ajjz7m9t57Hz/hOE2q8TLydKKGbuzYTVzPnj0dW3RYsHgqR0Ok/s69e/d2e+65Z8lDd4gcmgJA484Cj9tuu63U0Iegn3ca9j0yVHjGGWc4/Nm1dVNuFDSsVbjkQMllZSBKFZ7zWd1s374NBdpvo513DMV/dQg0Vd2re0exhEDmELDG5pFHHikJtxBMRn3XaAaHc2tEw0TMw7HGLwRt0ag9Attss40bP368V3CogyECjTVW2pkzZ/qJ08xBVGgfAk899ZT7y1/+Uvpuq/1+wR/lCuelzMH87ne/661huGIwZSrOUbXpxt/Rdf4RkIKV/zIsdA4QZibQpk+f7s30AGL3UgcnGsmFVo+ePbwXb+iZMLVz6jyIQFAEKG+GlXA0O27cODdo0CBf5tyvdKTBHBaUCy64wD344IM+eegqtB0BlOLLL7/c+8eiTCspyVih7L6VL6sDf/rTn3rXC1dffbXfUaK8DCxu+f22c6k38oqAFKy8lpz4XgaBjz/+2L344ouOc8iAIrXCCiv4hha6Eqgh0Q9PyxTnwYMHe+sVHNiqwRDcUL8YEr/99tv9sn/Vt46hzlypm266ya8ujL5eryxbipQ1ihcHOLOJNs5K8XmGexizHqoMDDGd4whIwYqjoevcIoAAxDzPfJRZs2bVJB+sJqTRRSgr1C8CNKbUtxEjRri11lqrZN0ImWM8gjMcDh8KHUcAPK+44opoC5vOJUz5jrFcgTFnOm9s5M3B6kDuhVSsO55LpRAaAX2doREXvVQQMKVm8eLFvnefCpFWEl1vxHpu00039bFohO1o5TU9zhkC1LU+ffq4r3/9665Xr15NuOeZ1cUmDxL6QZ1icjaTqgn8Vug4Ali9GepjJSCBMkSxAl/unXXWWd6nFfufMondFNs0y7rjuVIKtUZAClatS0D0E0WAoRMcLjJHJXTjg8PJ1VZbLdH8KLFsIsCWOMMj57LxOpZmY0vaNg+Iidk41iXYvWyilB+umGf18MMPu//85z+OThoKFEOHl1x6qTvkkEP8NkRvvPFGqbzBPV4m+cmpOA2JgNw0hERbtFJFAKE4f/589+yzz7r999/f71ifKsFY4gjbLiss71aJlu0r1D8C22+/vR8OJqcoWZR/XNlKGoFGGs6xFQ5e223LFehAW6FjCIAvlim20Nl6661dl85d3Dm/P8dbtZh3RUC+COuO4Vy0t6VgFa3E6zy/CMAFCxb4hoiJ5/w2cz5ZT7MR7BrRW2vttR2WLIRymrTqvBgznb0uXbr4RpjhwZANbufOnRzWK9tHr1HpknKVVGUBz8cee8z96Ec/8gtlHn/88SZJY7Wyb9qwt99NIuqHEFiKgBQsVYW6QcAaO/wDMVS46qqrBh1CYcPntSMFC+eT1uutG3CVkRIC66yz9jJbI4VoaDFU4cwSSwshPjxI3Q/BQwmEOrsw2bFw4UJ37733VpU74V0VTIWOpDlYhS7++sw8c7CYLxGy0TFarCTEgqVQXwjEG9M111zTrx6M+0dKO7fQf/zxx9wDDzygjYLTBlvpC4GEEJAFKyEglUw4BKy32RzFGTNmeC/X9PBZRh0iWAPMdjkMISnUJwLdu3d3++6zn88cZW5HeW5bq6Pl8av5jQsSnOlaXSt/Jw2a5TSK/lsYF70GtC3/smC1DS/FzgECCEFM/UHD0qkwKFcrrrhiUNIilj4C1CkUG4Z/d9l1F0+wOUUnaW6ggxuB119/3Q8PqpFPGmGlJwTSQUAKVjq4KtUaI8CmywzhhGoEIwfQPnTt2tUNHTo0HN0a41wU8tQjrKFjx451ffv2DZ7tSZMmufvuu8/TlYU0OPwiKATahYAUrHbBppeyjsDkyZNLE81pHFs6ksoLlgWsV+uss47fOkeWhqSQrX06lCVDzmzqG3K5PvUWv0xPP/2098vEb0K8bsWva4+UOBACQsAQkIJlSOhcVwjQIGHFCh2wYA0YMMCxopCgxi90CaRHD7cfTHB3gT0jzJ0713tut9WDONFVvUqvnJWyEEgKAc3GTQpJpZMpBGiUcMoYOjCMxET3uO+t0DyIXjoI7LDDDq5vn76RfhVOw0KRYu4VFtm4WwazZKWTU6UqBIRAEgjIgpUEikojcwgw/4qjFkEbwNYC9fRpbrvttq5Hzx7pE4pRwFqF80vcjliQcmVI6CwEso2AFKxsl4+4aycCNEw2pNLOJNr8mjV8DBOaewg7tzkxvZApBHr06OGdyDL0G7ckpc3kvHnzvPd2diegflkdS5uu0hcCQqDjCEjB6jiGSiGDCDC0wtL2WoRu3bo5/CURNFemFiWQHE1TaFg9uN566/lNxEMN/0L78ccer9qzeHK5VkppImB1Kk0alnZIWkZT5y8Q0BysL7DQVZ0h8FGkYDVEK7+ibn8pZyEEDnvUrbLKKu6tt96SxaGEfP4u4nVl/ZEj/eIFXCRgwYo/SzNns2bPcm+//bZ3XlurIe8081e0tKk/1B3KsjlL6Morr+xWW201Zx01s4Kj2C/HsRQ0mwbBXFOs9WwPhsUzHnhH9SaOSNhrKVhh8Ra1QAggVBZFQgeBFNqKxBAhK84IEm6BCjwFMlZvGBZcc/jwklUyBVLLJEkj/MEHH/gJ7jykoaRBNp6WeUE3coEAUxcsUKYoT0OGDHEbbLCB69+/v69jIyNlftSoUa5Pnz5eqUfRai4gX1DAZ82a5Z588kn38ssve/c07Mf6/PPP+2e8KznUHILp3peClS6+Sr1GCNAQhZ6DZVm1nie/aSjVKBoy+Tpb2dHwbbPNNt6KZEoOz9IObPl03XXX+fpDA6l6lDbi6aePss5+pcMjhX38+PFuiy228ArWsGHDqtrDNF4HqIMoabiF4WAY28IH73/gps+Y7hdH4LLmjjvucFOnTvVW9bjlzOox6do1acTpWJo6tx0BKVhtx6z0RnMVsrn7pReji2rixOPruu0I4KCREMe67alU/4YJKRQsLFjQ5VDvsXoMsxTTGhkmuNMoWiivTxbPnidxJs05c+a4d955xycXbxSTSF9phEOA+sK0ASxTm2yyidtxxx3dRhtt5IcBba4m3MTrUXkdM27L75f/Jg3u9ezV09ODJu5FjjjiCPfiiy+6q6++2k2aOMlNmjzJDyfGaRoNzuXpxp+1dt1cmq29V4/PpWDVY6kqT15Y1cqChdk/9FwdFXk6CNDQrL322t63GRQ60vBUy6EpU0888UTJlxt01XBVi2A24mFdYi7VuHHjvFK15ZZb+oUSyAebV5UGp+X1hM4eVlg6CVhip0yZ4h588EF3yy23uEceeaQ0jJgGL0VPUwpW0WtAneafRuqTTz6pSe7iArRc2NWEoRoStblDNWShQ6SZT7fZZpuVFKwOJVbly2CG9fXee+/1K2GlXFUJXI2jxcuJTcHxm3bQQQf5+jMsGgIkIA84zKqdpqLlCS6labx1XaGrt2yNGDHCW7ZQsC677DLvCoS5XMSzYO/Yb53bjoAUrLZjpjeEQIsImBBtMVKNHjIHZM899/RWGVNATQmMny0PcYFrLPOM+/Fn8WtTqh599FG/hx7PLG1LIy9nFKx11123tGjB8plmfqCB3ytWoRIMvzhN4yMvONYznyhJNkeO4WQUq4MPPtiNj+ZYYTkqLyt+l9+zcu4oTpXStTThkzrEQTy2feLYeeedvTPbv/3tb+62224rdUyJT0c1Xu8sLZ2rQ0AKVnU4KVbOEKCRZ+PlkMGEG0IJgWuKRkgeWqOFgnXooYe63XbbrSRIecd4ZxMY79rCEqIxsOulZy+kl0Qxo2cWOnX6otGwtH7961+7Z555JtcCGncbrOYKHSZOnFhSsELTFr22IWDWqL59+7of/ehH7oADDvCTzvn+sxyQU/C4+uqre3nAvLArr7zS8d0y/89kmBSs9peiFKz2Y5fqm74Ri3oaCu1DAMHBPKhaBBO4KBocWRJQ8IOSxWH8oUItF1OQksCMIS7SJ2QNg2rzRx3adNNN3VprrVXtKx2OZ5i98MILjv00s95IdzjDOU4gXq8nTJjgTjjhBLfrrruWFBOyZuWZxWwil1CycB2BPGAl4vHHH+/r/P/8z/94axayLMt5yCKucZ6yrWLHOc3INZXNDlOCrAFt7n57WKfi2yq49rxf9HfAj8PKxsoqLVziQsjqAfSzFuDN+GIIgAYc5YpgGCVxNsUA4W1lkDUsWuMHvodHy+kZ5rG6ZNi09m57n5M+372tHrR0rE7Z2e7rHB6B8jJghd5VV13llSu44bsqj2Nc2n072/3QZ+j7bz86o1xZgHcm5V944YXuO9/5jnd2anU+frb4OreMgBSslvHR0xwiYMIDdwmNRsCwlsBFixb54Tf4QCgp5BMByo9l9PEGKO2cQJPJxg8//HDapJR+OxGwb5r5VmeddZY777zz/DAb1h571s6kM/Ea+WBY/JxzzvHDhQyTK7QPgdqMobSPV70lBKpGgN4Zc7Ci9mqpklX1qx2O+NniLzaalpLVYThrlgBzUxgeDF2GOBhlGT10FbKDQLwe4HLh2GOPc/vuu48vJyycZhHKDsfLchLPw7JPG+/Y5HYWeBx99NGOrXsuuOAC98ADD3gFkjTIr+pncwh+cV8WrC+w0FWdIGC9SKwPoYQANI3uosWNFiyEEMJKIZ8IDBs2zI0ZMyZ4Y8KecmxUbo1hvG7lE8n64Rolavvtt/fWna997WuRUtU4zJ4H5cpKgXrV0kE88kNgHuvhhx3u/vrXv7q99967ybxW1UsPUYt/pGC1CI8e5hUBBEjoVYSmYDHvyPYcQ8lSyCcCK620kncU6aJRXivbtHMCHfaTI4SimXae6iV9ygMv7L/85S/dxhtvHJUP33bTLWbqJa+WD/KMLMNv1mmnneb22GOP0hxOi6Nz8whoiLB5bNr8pC0CsS1x28yIXvCWI0zcBJStkAH/UuZFPmsKFvWutbpneLUWLySmtaDF3JOSks5UuhSrEViDOxs8X3755T67Rce/FmXeHE3KZquttnK/+tWv3IYbbliSKWbpae69vN8n3506N240zrY7Z555ple4brzxxpIcUT1tvpRlwWoeGz3JMQK1/Og/+uijJj6msgRjLXHJEg6t8dKzZ083etRo55X0SLGylZatvdfe5zRkHB9++KF7/vnn25uM3ksBAYb58eZ/+umnu9GjR3vFwiseS4fRUiCZqSQtr0x+Z9uoU045xa80zBSTGWVGClZGC0ZsdQwBepZmwepYSlW+HVssiPUKK5Y1mlWmoGgZQgAFa+zYsaVNu9NmzRTfefPmlSwDadNU+tUh0KNnD3fccce58ePHF/qbpo5ikWd49Nhjj21xA/TqkK3/WFKw6r+MC5lDhnfiO9WnDUI08OYdDEIHIWRLtqVkpY18OunjmqFvv76lyb7pUGlMlYbr888al/i/+uqrmuOSJthVpM03Gw+HH3q4O+BrB0Q7HDT2ovI0oT2ej45eY8njuyD/zMX6+te/XhpCL8eso7Tq5X0pWPVSkspHEwQGDx7sneRxkwbMjiaREv5hQsaUK5JH2YK2Qr4Q6Nevnwvp/8cPQUbV5D//+Y8UrBpXlfi8qh/+8IfunN+f4zmiE8U3XjQFizzbARBcMzrApPcTTzyxNFLAfYWmCEjBaoqHftUJAkzIDDlEiHCxrXlYdZO1ye11UqxBskFZrrPOOg5HkiEC9DhQw1lBKIU8BOrN07Bvl6Ew9hbEcvPZ5581/0JBnyBfGSrcZptt1JFspg5IwWoGmCzclqBtfylgwULhQdmJW6/i1+1PvfKbVl5YsExIV45Zu7vGY+04yAdlFPTevXsHYxYF6/3333cskFCoLQJ8IwMHDnQ/+MEP/P58cLPCCit4Jbi2nGWDunUIkHE44wUn5K3CsghIwVoWE92pAwSYf9V1ha5sY1zKTdrKBYoVByvBsqpgAQYCUqF5BMBn6NChpX3Ymo+Z3BOGnd58c5p305BcqkqpvQh897vfjby079ukc6bv5gvZgSw1PNjg+tRTT22yByPPqjnaWz55eU8KVoZLyipwhlnMJGuY9Hv16uW6LN/F+3AJwaQJHPYhnD17dsnRaAjaopEsAijH5v8qbaU8zvnkyZO9FSt+T9fhEdhpp53coYce6q1WUDdFITwn2afI98H3csABB7j9999fw9tlRSYFqwwQ/cw/Aquttprr27dxBVjIBhIrBO4Zpk6d6lC0FPKJAEODq666qmc+RCfH6ujEiRPd/Pnz8wlanXDNwoZDDjnEDRo0SIpVC2VqSqd9H7g1Oeqoo/zcRavPFseS4b49s3v1fpaCVe8lXMD8DRkyxK2xxhrBBSQCZfGixW7OnDmFEyT1VM3Y4BmHiqGCNVL4wJJiHgr1ZekwZxNLzH/9138Fcc+xLAc5vROtzsCFBc5YDzroIO/KoYjKVKXSk4JVCZUK97w2HpvPUyFKorfiFdQEcKIE6jgxFKw+q/dp9C201HdN2tm1MmKj5/feey9tcko/RQT69OnTxIliiqR80jZPEOUqy3P30sah1unTKWNoMKT1stZ5ToK+dzESTevs1q2bV1CHDx/uO7dxdxdJ0MljGlKwqii1klkzqkSm+JTuVfF+e6LQYKdNoz18ZfkdU3IYHoyvAOO+HcZ/WuW4ePHi0j6ERitrZ9WrlkuEBRI4VAyGUyRXWEE4a9aslhnT09QQQDlgDtFGG20UrtxTy03YhE3uQnXYsGHusMMO806e499P/Dosd7WlJgWrtviLegoIsHS4a7eurnOXzqnvIVfOPgoWKwmzGuLCMKs81povFkkQQmLFsPJbb71V66wXlj5uGZjczuKGkOVeL4CbtQpFdbfddnMjRowoWWOLqlxRtlKw2ljDQ1UW6ISi1UYIMhkdoQheDA2OGjXKLxmuBaNMcsf3lkJ+EWDCLiHk9/fOO++4mTNn5he0HHOOcrDjjjt6h5khy7wayFrlZ+kmEa3Gq4ZYQnE23HBD99WvftUPGRZ9yFsKVkKVSsnUFgETML1W7uXWWnMtP0nV7oXgzHq9TFRms2eFfCLA0CBORkOHhQsXygdWaNCX0luj/xp+bz2sL96dfo34QF75/Q4jpQnFhN8mV5plKRpeJlh8n8bSznn8ujFW+n+hyWKB7bffvrRQpNU8pM9WzSh0qRnlnBIucmXJQ5GxzJpNemsREHIzZswoNZRWVxA6CvlAgLl7bP1BsPKrxHlSZWo0Pv7446AWs0p5Kto9sKccR24w0o0fP95n30/YrgEQyA4OrGnwxHnB/AVu4qSJjg3A586dW9qVAvYYxsYdzZChQ9zYjceW9s0kDQtWt+x3iLPRZC7btttu63nHop/laRNp4iIFK010lXZQBLA+bLDBBs6GeIISj4gxPDhp0iSvYJmgCc2D6HUMAbZEYTVZ6KAtckIj3jgEzJyrgw8+uORYNjwXjRRRqDhQtB955BF37bXXujenvenenP6mmz59usPCGZcpKGHslcl8U/bN7N+/v9trr73chAkTSvPI4p0AruPvp51PcIWfm266yb3xxhtpk8ts+lKwqiiakBXT2EHjl08cQ6O6M4rVl7/8ZbfyyitX90IKsT744IMmPVFIUH/iwi4FskoyIQRsFwBLzsotTRmA1YHtlawRNJrGg87pIYDPMyyWaZZvS9wj56lzHy780N12+23uT3/6k8PhLK5eWrP6MBXh3Xff9RuEo5yhlDG5nFV8e+6xp1tjQGNHgfpVi/yNGTPGDxX+/e9/bwmCun6mOVhVFi9CL7TgC02vSigyG405FPgwItQCOwRi3ESfWaDEWLMI0NhhGSCEqkNYJ7B80mCGotksAAV78K1vfcvvO9maMpMGLJQ19e25555zxx1/nNtnn33cfffd54cD28oPcgdl6+GHH/Ye1Q886EBvPWJVMwFaoesWQ5g777xzTZS7NMqrPWlKwWoPanonkwhsvPHGjl5TrQLbnMiXUa3Q7xhd6+EzzIw1IGSDtGDBAvfUU09p9WnHirDNb+MQE9cMlLeVf5sTacML5XUKJeqXv/yln2B/wQUXeGWro3ygsJEGihp+vf7whz+UpiyghJXz0Ab22xV1880396u62/VyHbwkBasOClFZcH7lCsuD11xzzZpZkVhqz3wJQry3GL9WWWUbAebwWehoY2fptHZmEjBzbxTSR4AyRaEiMBF73XXX9fIirW/UFJry9FGqGQ48/fTTvcyAL7N+c93eI54G8/pOO+00d+aZZ/qOH8pXWy1jHSkRVkQOHjy4JqtyO8J3ku9KwUoSTaVVMwTw3r7pppuWBFNoRhCgTOZkxQ/CUSFfCFB+lNu4ceOCMW71hLmWIRu+YBnMKCGUkK5duzqsKyhbX2Cf7mpfq2O4csGydMYZZ3irpdWDpOEiXRR3FLnTIksZnT+UrFAhGpT0pPAxttJKK4Uimyk6UrAyVRxipr0IsJKGyaoIS+vFtTet9r7HHAiEp/WQ25uO3guPAI0RBxbQ0EF7EIZGvHFLl7333tsTRulo/GbT7RhRv1gEw3Dgn//8Zy8ruJdWsDqNPLz4oovcueee6xdTcB9ljyPNYHL4wAMPLOz+jlKw0qxhSjsIAvRG2Z4BH1hpC43mMsRk0jxs8kxDYkLdBLD9bi5vRbpPHQoVrAHCvYdNRg5Fu+h0GLoaNGiQhyHN+h//xijvCy+80J111lmO6QTNBVN+qj03lw73SQO6WLL+93//11uzzCVIefotpdOeZ2YtY/HRVltt5ZNA/sQ7oGli3x6ek35HClbSiCq9YAjwcfIRY37eZZddPF3uxT/gEMxAk2X2rAYiILgU8oOA1RnOIYcyoEddwYkk9UchfQSQDZQxPppY0BAiUMZY1h9//HH3f//3f361Xwi6RgP65JvVquedd5678sorvdKVtpykfls46qijSsOTRZKPUrCsBuicOwRMcO27777R0M5aNVVssF7ddtttHkOzTOQO0AIzTF3i6N69e1AUqCts9CwFKwzsKDps5bLFFlv4Bj/Nxj6eNlMHLrvsMvfiiy+GyWgFKihUbCh+/XXXu9mzZgedSjE8GnrHP2Eckwos1t0tKVh1V6TFyhCet/Ef06NHNIkyMhzFe00hkKCBRGigYNFDJCDI4nzEr0PwJBptR4AyZKg5pIIFTRp8Gl+tImx7mbX3DeZrWmMfb/Dj1+1Nu/w90kRG4J/q0ksv9XIBeWBHefy0f0P3+huud1dddVVscn/aVJ3rFy1COuiggzwWcZzj1+lzEZ6CFKzwmItigghst912pfH90EIL4WACguFBltuXK1cJZlVJpYSAlSN+kdjiI1SgvkJ72rRppf0rQ9EuMh38Q9n8qzRxoGwpYxa/MMEcRZrftQzQR0ZddPFF7qWXXgrGD52XrbfeupZZrwltKVg1gV1EO4KACSk8BbMtBHMq/LBcYNkFH34iZ2Q5u+WWW0o9QmuwLY/8Vsg+AjS6WERDBpTy999/P+hwTcj8ZY0W3yt7TdLgpx3su3/ooYfc/fffnza5ZdI3OWR8EAGZxfHCCy+466+/3i+uMHm6TAIJ3oAHFhYMGDCg1ClNMPnMJiUFK7NFI8YqIWACgmf0iHbddVcfzStY0ZUJFX8zwB/4mb9gfmluRWj6AbJYGBJss7R8lzATnwHVGjaru4UBuoYZXW+99RyWSkJclthv/yChPyhzWK1+97vf+X1loRdXdhIiU1UyJpeoa1wzNM0w4Ztvvunft+d2rirRtkSK+phDhw71c9/a8lre40rBynsJFox/EwA4Fj3yyCNdr169SkoVV043LgAAQABJREFUz2oRnn/+eW+FMNrGo53tvs7ZRmD11Vd3nbuEc8RoaJiiZb91Tg+BkSNHlhSs9Kh8kfJ1113nkA+1CCZ/yuWi/X799df9ljrwFkLJR1b369evFlDUjKYUrJpBL8LtRQABgfO6CRMmlKwA9BatobJze9Ov9j2jc8UVV/il9rxnwqvaNBQvOwgMGTLEz08JVYbQwZLAMKFCGATwc0ZDHyKgtNxwww2lvQBD0IzTQD7ZEb/PNffZXPyBBx5wbNvjpzqUR0r4N/Mbhw0blvrqzYTZ7lByUrA6BF+6L4cS9OnmIvnU2dSZFSk9evQoJW6ChHPIgBCdMmVKaf5VSNqilSwCNL4hGhrj2ho5HI0qpIeAyQTmajJEGGL+FbnBJQO+rwjIcjv8jYz8ufnmmx2WLMMoLbaW67Scd48xevRoh6W4KEEKVlFKuk7ySQP4ta99zbEpbxYUUPYe1P6D9VG58I/kFayAQ81sk8NBoJFLu6Grj5JqXy5WXXVVN2ajMSUHo2nLj4kTJ7qZM2e2j9kAb1HX8MH25JNPpi5LDWu2omJxUlGCFKwclLRVzhywmiqLLC9mWJDhwRW7reiWfL4kVXotJW5l8tyzz7mpU6eqYWwJrJw8Q8EihJzJF1ewcgJT7tg0xRXLVe9VeqfKv8kFtqN57LHHUqXV0cThFWzOP/9870oiTeXecFkhKgPkOMHudTQfWX5fClYHSocKEj8sqUr37Fm1Z9KITzxMs/JXy1Ot42277bbuN7/5jV/uu6RhicPsHDpYuSAkaBxfePEFzwL3TZCXn0PzWC295uqp3a82nXqJZwpWyG8ND+7moLZecMxaPpCj1GkULByMEvidRrB06XThBgGLaHl9su+ruXNb+WounebuW/omp5544onSakJ7lvTZMOjVs6d31ZB0+llNTwpWVktGfDVBALMyDgI32mgjP9+pkuBq8kKAH8xdYII7wQRIALIiUUcI4APLNt+to2xlMiv4v4rP20yDSTpeKDY4j8VFAyGrsiHO11133ZUGHMukyUR35tCav7k4D8tEroMbUrByUoh8tEUNrPr5wQ9+4L7+9a+XrETWOwuNCQIBIcrqr0mTJrnZs2d7FszsHZof0UsGAaxXoSY/xzlGuZIFK45IOteULfM2097MG7m0ePFi98wzz/jVociJrAZ4tVGSO++8szQXME1+UazWWmst/63Vu3IFjlKw0qxNSrvDCCAQjznmGPe947/nP0oTCB1OuAMJwAPDgzfddJNf6oxylQW+OpClwr+Kh2lWEYYOGiIMg/jyyy/vBg4c6Lp165Y6QVaFsvcgZYsSkYfOMRa39z/4IDVrmylTnLEimqUvD9h0pMJIweoIeno3VQT4EM855xx38smnuOVXWN4LKvtQUyXcSuIMT2K9Yu6C9VDrXVC0AknuHzME3b17tGF44PBB1KgxTKiQLgJYKFGgrWFPg5rJAIYGsWzz24406CWRpslTNqt/MPKJFSL07t27JtbiEHkrpyEFqxyRVn5TIe2IR7V7do4/03XbEWCs/qSTTnLf+MY3og14u3nBCLa1DvCA0Lz11lv96sGsC9Ba45UX+gxDU+coz5Dh448/dhxZqNsh8x2aFvh27949VbLQ4GAT5XfeecfTsnupEm5j4iaz7MzrbEh97733+pSwxtuzNL6HntFE91DOXn2GavhHClYHwLePh3N5sGfl9/W7dQRY6XPGGWe44447rrQKBxO/BcO2Eu4WJ83zjBkz/BJsTU5OE+WwaTN01LXrCsEVLBozs4KGzXGxqGF1tonVaef80Ucf9RasWsmn9uSPeoglFYUKrNIM+CNjuLYIQQpWEUo5R3ncaqut3MUXX+yOPvoY3+OM+oS+V8iHb4pVrbNz//33+y0mNO+q1iWRHH0UeBpgLVZIDtMspTR48OAg7gGQCWw9k8ftj+A5BN/sR7j++usX4ltr9KyXpS9BvBQCAXpJCCMzQTPfar/99nNnnXWW69+/f+l+w5LGeQy17g0afXp5LGlm5ZfdK0SB1XkmsWCZH6w6z2rhssd3ysq1QYMG+byn+d3Onz/fcdjCF5NvRtN+Z7EQ8DrPtl8jRoxIlT0WLjEPqwhBClYRSjmDeUTQcGA1WHfddd2xxx7r9t57b9enT5+mK/Ki0VezYtUyGyiDCEkEEBukshTbhGYt+RLtZBCgHqY9NJIMp0qlPQjQoIdYJUoHjAnjDPvmTT7gHJVtv9JWsFA+zVIMRllWOttT1+LvSMGKo6HrYAiYX5pdd93VHXbYYb6HCXEEk318wZhphRACAAWL3ef/85//eCeCrbyixzlDgPoYn+eXM/bFbisINM6x6+ob8zQVH9wd2NZZeVMe5s6d65hfmnagI8P3hpwPMSSZdn5aSl8KVkvo1PAZlc+GLPL2ocIv/MeHAA1KJrBvsskmbscdd3QoV6NGjfKPiMs7HFkL5AehgODE91WerVfkhUOhKQIoV6EtWCjuttFzU270K2kEKNsQsgX3DLNmzapolcm6pQYZjGxLO1AOPXv09O2bFKy00a6j9JP8gGgErUfNdXNpZ7GxhNf4yijmVOFFmaHA7bff3m+VMHz4cF/ylq+W8piFKoLp/9JLL/U7z2cR82oxCjWRtVp+shIvXqah6iINWr03MFkoX8qTzqp1WNPkycrU5JrRKv9t97N0hndchhDS/gbwO8dcLJyy1nOQBSvDpUuFJ9i5EqtZ/HDxc7Lhhhu6kSNH+gnr6623nhszZoy/Zh5ESx8vzyqFWuYTnl555RX3z3/+sy4axOYwroR7R+7Vsszayje8hsKlrbwpfscQwHqFjzNC2uWcx7lXhi68432ec9rW3B69evhV4vjfqucgBSujpYuSctBBB/nlrPgNCd5YRf4WP/m09d4FHyI9QxzHsUqHMz0TrFYcXGOJizdepjDG72W0GEpsMYdjt9128/ljwmyr5RHhh8vKhoYvVkq29A5YxIV/OTZYOiq9H3/HmOVdO+weZ9Jgtebo0aP97Xh65fTi77XnmvQmTJjg5syZ4+db4OTRhlYZIjB6lfhsD71q3zEM8GHGnDrDYIcddih5l7Z71abZnnjkG17kS6096LXtHZNHbXurfbFZXYx8o45Tj0LUpfZxWvktdhZg2Bp5Z4E82Pdq9zp67rN6H0cbV+9BClYGS5gKjVBAwdp///1bNG2n8QHbx9Ra2sSzeQ1c2zwHe9+gJZ14WuXPLV5Wz/DOypqzzz67NDmzVV69goWK1WhubzV+FMEwMgXU3um0XDQvjdWUEcbloRxbnhOvubjcR+GlcbeyK0+zo7+Np3HjxrmxY8d6Xjp3anTLYfmI81iJ147y0NL70DMeicc1nQRw4TpUgBbloJAuAkyothWEYJ5WfeO7xQdW+febbu6SS526iEUJBQuLH/lICys6emZVTC4H2UtJClb2yqTEEYIhD5WQDxHBZQ0GDXdajXcJnMAXNMBYrshrW/MGLgQ7N8d6XJjFr5uL39J9K4/m4qC0wVYFna25V6q+D+/Q54wg5bzk8yWuc5d0PURXzWAzEVsrn2Ze0+2MI8D3avNZ2/rttiVrDK0xV5NzHpUseGaLnxALL2xVZ1vwzWNcKVgZLjX7SDva2IbIIjwmMW6f1UbOBDPntvJYbXyLB5Z23d6ya+395TrhXSy9UF5noQdP5fer5aC1/FSbTpbiYTGwScVZ4qveeKFzZPsQIlPjdTB+3dF8M+SMBciskvG081J/8fOHFQ5/hMa/nTuKT/z9lXutXCqT+P16u5aCldESpVJbo96RhilE9tL4AEPwHYpGLfCpBc04nuX07XdeGpp4XtK6BgusHQrpIoCCVZpThDE5pZ4FihVe3K1jnG6u0kmdVX2mIKZDoTFVrNnWvqVJp9ZpZ8/pUK0REX0hIASEgBCoGwSaKFgpKVeAxSIOhgjzrGDREbLOUJoVIBSdNPNQTdpSsKpBSXGEgBAQAkIglwgwdYH5rGkHLD8oWAqtI8CcOJsX13rs/MbQEGGGyy5ETyLD2c8sa20tFw2LZbYoxVgBEGAoKj4c1dbvt1qIULBwc6DQOgJYFZOYs9s6pdrGkAWrtviLuhAQAkJACKSMQFpKVZxtOlK21UwIenHaSV2H6AyGoJEUHh1NRxasjiKo90sI1POHU895KxWgLppFQOXfLDSZf9BkDlbmuc0eg9T9vCqMtUZTFqxal4DoCwEhIASEQKoIxIcIUyVUR4mn0akgTUu3CEqbFKw6+iCUFSEgBISAEFgWgVCNuikNdl6Wk+zfSZt3ygIaadPJAtJSsLJQCuJBCAgBISAEUkEAX2MhvJOjMJilzLYNswwVRaGw/OrciIDmYKkmCAEhIASEQF0jYBasNDOJEmUr4+RANk2k85O2LFj5KStxKgSEgBAQAm1EAOWqYUnjfqBpDkuRtvnbwtlouVJX/ruN2QgSnTyU85k0ZpZeOZ0gGQxMRBaswICLnBAQAkJACIRDAGvSp4s+TZ0gytXqq6/ehE4elQjzRG+KUJMMdfCHpcm+jSGGbTvIbodflwWrwxAqASEgBISAEMgqAihY7LFHiIxZqQU8k6+22moOtxCEPCpXKEA2j4xrU4iSAg1MOFCwzGdYUmlnMR0pWFksFfEkBIRAIRCwxqwQma1RJmnIP/roo6XU09OwULBWWWWVkoJSo+x2iOyqq676xcbYHUqp+ZdNwQqxqXTzXIR5IgUrDM6iIgSEgBBogkCnzp1Kc3aaPNCPRBFgKCrEFjYoWL17986tgoWy369fP7fiiismin95YljFPv74Yw0RlgOj30JACAgBIdBxBOjFL9eQ/BBMxzmrvxQahwgb52CBe1qBocGVV165tJIwLTpppbvCCit4Bcsm6qdBx4YgGSLkqPcgC1a9l7DyJwSEQCYRwGKwwvIrZJK3emKKhnzhwvQ3YUZ56NWrV+LzlkKVBcon1iubQ5YmXYZsbV5cmnRqnbZWEbaxBNLsAbWRlVxHb27ypPDNdbGK+TYgsPwKy7sVu6+Y2wa5DVmtaVQa81mzZpV4iMuY5uRQKXIbL1ZaaaXcDhGiWIUYIgTSt99+282bN6+N6OYvuixY+SszcSwEhECdIBBv7OskS5nLBkOE5hIgaYWqPLOUZ57LlOHBEAsv5syZE2ReXHn5hP4tBSs04qInBISAR8Aao2rO9QgZjT1Wgzw3yHkoF/D1K9ai6VdgHj+S5r9bt26lVXhp0kmab9IDp+7du/uk066T8+fPj63sTCM32UhTClY2ykFcCIFCIZC2AM8DmFgKWHmmkD4CWLAWf7Y4dUIDBgxwAwcOTJ1OGgRQ9kPUR759XGcUQQZoDlYaNTWhNOkB5TnU+gPKO35pln2IsmkJ/5aepZnvltIOgUlL9PUsPQQWLlzoPvzwQ+9GIT0qzg1YY4AbNmyYe/bZZ9Mkk0raKIdrrrlmKmnHE7UhW/MYH39Wb9dSsDJaogh7JgHivwWzc1vGxSvtg0U202xAaDDZ6JSeIh/QkCFDvCk+TZotFR10X3/9dTd37lzvXRmeasVLVpQJhknopa699tpBVgq9++67btq0ab7+QjcemiuL5u7H341fE78t79hmvFYmYEKd7dOnj1tjjTU04TwObh1do2AhS/FTlWbo0bOHdzZq9StNWkmnTf0fOnRo1FAknXLT9LBe8c215bttmkJ+fjWVevnhu6455eNEufr5z3/u7rzzzhYVrEqVtKVGp1L8JMCk4aIRZektyszYsWPdueee6/3CxHsqJnjS4sPyAs1rrrnGnX322Z4HGlKjaTxY3KKcwaBHjx7u/PPPd1tvvXUJjzTyD8aXX365O/PMM70zzeYULCuTOA/Vlg/vcsTrVzyd8mvStY4K1xymYO27777u1FNPdX379m2SXrW8lNPS7+wgQB2ZOnWqmzF9hhs8eHCqjKHA4Qsrj4EVhIMGDSqxbt9m0t8AKzonTZrkv8Vqv90SUzm7kIKV0QJjaTFm5smTJ2eUw5bZQqDtt99+bo899mg5YgpPEQwofJtvvrk/Y8lSaEQAZ4JYltIOKNksxZ49e3bapBJJn/rKN0fPulwZTISAEqkpAm+99ZZ7a+ZbqfKA3EGBZz9CRh3y5ucJFxNMcjfFKi2wkAkvv/yyp4Pylja9tPJRTbqa5F4NSjWIw4fKR0qgUeR3pYMKmoUD3lBqjEe2QsB6RINFCPkRWY9r3Lhx7thjjvX0jbcsYFUrHgAC5YEyIlAmdvgbCf0hf/Hy5rfVCzsbBgmRrPobMHrQp05wJjCExMG3FjLEyyMk3aLRQg4hk9IMVpe22WYbbymLfwNp0k0ibdwz+OHBKLElUecozYDiyXy4IgQpWBkuZTOfcraGsKPntLJrfJE+1wib5557zt19992lBj0t2s2lS2O+5557uv79+/thyziOzb2Txn3DptZn8gYPVq/SyKvRsDpgjU553i1etTyQTktHW9MhfhwH5ucwN4QQp+NvpPgHq0Hae7+lyH5ukmYoGAtl2oF6zhzHvA0TMjS+yy67RPKB+p+uWoCii5JlMiHtMqll+ukiWcuc5Zw2Qt6WzMYbgrxkC/4XLFjg/vGPf7j33n3PK1l8UKHDqNGj/DAl/CgIgeYQoEddi++MOXFsr1KLb6M5LOrxPmWLPEozUIbQ6dmzpxsWrSSkg5eXckXRX3/99Ru/gRRFJXiw8AiF1zoyaZZJrdOWglXrEmiBvn2cSQp+0kzjIBvl6XKPSfoPPPCAf5aUklNOx35DLx64T/jGN77ht4CIP4tf2/tpneO0an2dV6GWVtlYHZk5c2ZNtu7ovXJvv+qs1vWi3ukzRMjkapsXZfUp6XzzfWGRHDdum9IUD2jYd1fNOWmeWkoPfggoVyt1Z5ufRktxS++09Vkca+ZmMgcLBasIQQpWhkvZhH+GWSyxFufVPlrOrIb845/+6Oe3xOOUXkz5ApqjR492e+21V8qU8pN8vHy4tt/5yUHynL7//vuOI3TAcsChkC4CKFhPPPGEe++991IjxHf02WeN85fGjNmoNAKR5e8LKxth9913d8tFylXagWFapo4wTIhsrkWbkHYe4+lLwYqjoevEEWAS76uvvuruv/9+P6k4cQItJNgo8Bp9P+2///5+dU8L0fWo4AikPQl6GXgjAyvTAJhgrJA+AnT20pyHhbKAwtK5S2fvzR3HnYQsK1iMjrCwA7cthLQVHhRd2gPoZhkXD0YCf6RgJQCikmgZAZZIMxfr008/LfVa0v6Q4QgaKHg0Yptttpn75je/2TKjelpIBEzQU1+i/+FCZDDAMaVZsBrph2QgXFazQIlFDHEFy8o9Kd5IjyE2t8R5f1IHHXSQT9qcHGe1fLFe4WSUkDQm5Wky19GGadOg5TORoT9SsDJUGPXICsKF8NRTT7mbbrrJ9/CSnFNWLWY0YnvvvbfbeOONq31F8QqIQPqDJE1BxRWLLFhNMUn6lzXkrBSls4eiY/dSoRVVIjp1G2ywgadjw3BJ00oiPbDYddddvQNirtMKhjfzrygHQi3agbTy11y6UrCaQ0b3E0HA/E8xiRiXDR999HHwoULLyIh1R7gtNt/CC700hYnRK/I5mtnl/+UJAz/xNqCGRR2kIQ7teytPZZIUrzTwc+bMcU8++WSwCdbsZjFy5MhMD4expRl8mgKUFN7l6Xy+dG7aSy+95Muh/Hm9/paCVa8lm5F80UvhoPG66667Iu/0T/seZC3YYzhmx512dKuvvnotyBeLZqSoRANuvqwrKbOV7tUKIOOFOTpBe9XMweqyvFeyapX3ItClfDko2+nTp5eGqNLOO8oLUxOyFFCksKiZQrXPPvt4S5t9A2nxiixg/hU7JtgQYVq0spSuFKwslUYd8mIfLh802yNceeVVbv78+aUPvD1ZJq1KR0tpwQfWtC222MIfvG+8tfSenrUPgbgQJwWwjh/tSzXdt2h8madD3QgRaHSYEM08QYLV6RC0i0qDIcI5b88p1cWkcYiXIfX929/+tp/fxHWoelVNnuAH/2vbbrutt6DyO81AHacDM2PGDE8mjlOadGudthSsWpdAgejzETMP69FHH61JrunB9lm9j9thhx28M8CaMCGimUWAISSbMxiCSb4HG0IPQU80nLeg2J6EqSoVkb7SsKTBbbrppm633XbLDPTk2fK91lpr+c4mzNm9NBl9e/bb7sUXX0yTRObSloKVuSKpX4botbDx8n333ef9YtWiR4evl1132dXPOwBpsx7UL+rKWbUIsDl16BVffll/p87Vsqh4HUTgtddec5MnT/bljPwxhSNxBQMjaHSgQB922GGOrWgSp9FOLOCDTZ0PPfRQ16dPH59K2rIYmii2zz77bBNLXtp02wlRYq9JwUoMSiVULQLXXHON94VSC4Hz+edLHD03Vs5gIifU+0debbkUPR6evnElEjJQ99i3LssrzULikTYthoBZcBOinClTZBwrlw8++GCftVrLGqtnzA3zzkWXKplp8wXuTz/9tJ+LmzattOtQW9KXgtUWtKK4VA47Wnu1SBWpNSzsORajKVOmuNtuu83Pd8FiEHRiccQIQg8fNYMHD/Y81ELRMzx0zg4Cb775psNPT8jvlgZvjQFr+CFr1cMwdeG6664LtpKNusR+kwd87QC/o4SVMWe7DpPrRirQZJEPc8PYlDptHiz9Tz7+xMt8uLB7IfNdK1pSsDqAfLkg5nf86EDSy7xKpax0LBOxhjcq8Vd+z4ZgLrroopKQK8cxzSxEReRN9/369XPHHntsaYl8vNxau06TP6VdGwQoc5xQ0tO2kHa9RLliCAknjzTCCmEQYJqC+cMKQ9G50RuNdqzYM6tWKLpxOtRn6O+xxx5up512SrUjYXLf6M+bP88988wz9rNJW1a6WYcXUrDqsFCznCU+PALLdS+//HI/B4qPPnTAkrbjjju6UaNGhSYtehlGIPR2OdT9VVdZ1c+JARb7PjIMUe5ZQ4nGH1bIBQ04kz3kkEPcdtttV3KTEFLuoVxRtzbffHPfsVxttdWCjhy88MILTbzo574SVZmB8C1blYzVSzQqdto94TxixRwIts+xZbuWB8MrbcwYlmQu1je+8Q0jrXOBEaDxocGzrVTSrn9ADU3orLLKKg6P7grpIwDeyJ7rr7/ebzgcopzJFfIGv1jHH398k6HC9HPcOK2FusbQ4Le+9a2S36sQCh50Cf/v//2/kkJn90LkvdY0pGDVugQKSp+hETb9vPrqq/2Hx0dXPhcL4WdHEjBZWpyt97rzzju7NddcU5aDJADOeRrUiblz5wbPRa+Ve2m7nECoI3cIWNBZTWgBmZB2QKFhcc3JJ5/shg4dWpJ3cbkED/a7o/zE02EI+sQTT3QHHHBAqa6lqehAm/TJM8OxrB4sYpCCVcRSz0ieadAuvvhi98Ybb5TM5qFYM0GLcrXffvt5+tBGMCgUDwEaAhT8WjQEWK/MXYjqX7p1D5kDxjT6N998sydGuZd37pLmwsqVcmYO1I9+9CPXv39/r4SgiNjzJOmahQqaJ510kjvqO0f5nQPSzqvlwfJ0+WWXu3fffdduF+osBSvl4ubjSbOnkDL7qSXPR84HyNJdVhQSTCCkRjSWMILWhO2RRx7phg0bVhJ2sWi6LAgCVvcee+yxYDm2BsiU/WCERci7C3j88cf9ogbwt7JIGxraAuZjHfnNb7rf/va33pKVVhuBfOvdu7f73e9+5xU6tgpb0rAkWHsEpuTt4Ycf9sOxaWObxfSlYHWgVMoVJ/tQ7NyBpOv+1ThG5513XvChGRpUBACK3vDhw/2yZUDnXlzYxvms+0IpcAZpjAivvPKKP1u529nfTOkPDfyKK65YSj1e/0o3dZEIAvHyZKI7mw8TuJ9miMsVaHWPyvvAAw/0FnymKXDPOp3EbS8/cTp4kb/wwgvd0Ucf7ef4kX6n5b7YhzDN/FrabI82afIk+1m4sxSsNhY5Fd+O1l5t70fSWrr19pxl03/+8599tgzbtLGLN2KY0Pfee2+3ySab1Bu0yk+VCFh9Y0Nas2zavSqTaHc0HN6OHj26ZMENRbfdDNfJi8y3u/fee5u45giVNcqYTt64cePcFVdc4X7/+997v3woQRztDaTLkPP3v/99d92117k999zT0zHlDe/ycdnXXjrVvseQe3yuW7Xv1Us8KVj1UpI5zgereu644w4/F8s+/pCNzGeffeZN9fip6Yhwy3ERiPWlCFD+uGqIWwLSBocJyOutt55bfvnl2225SJvHek0f6/m0adNKym3ofFLfGMY77tjj3K233up++ctfuhEjRviVpdSHagKKGko6qxRPOOEEd+edd7ozzzzTDRg4oLSYp5p0ko6DAkueTKYnnX4e0mvcxj0PnIrHukbgueeec5dccolfYYPASFvBKv/osWKxszzbWjAvjOdp81DXBZrTzOEjiQm5IR1/MkRII0uDGmILl5wWTSpss5qQzh1ezUOEcrkDTeRMp86d3MiRI71yddRRRzn8RqGcMITJ7gLz58/3508++cTLJhQqfFmxzRLuFxhmHD9+vL+HLCulG8nSSjR9hJT+mNxkCBZs+d0cDxY3JVZqnqwUrJoXgRiggcFqwMeIM75h0YTz5j7INNCyj/xLX/qS22GHHRzKnt2zcxp0lWb2EKAeMm+EZfQhwworrBC0zofMW1ZpIWOwXv/zn//086FQcmsVTM7QuURhwiEpBwo3Cj+rHhcsWODef/997/2fnSioo5zjHVLSsbQsL+W/7X6aZ5RCtiR65513mvCXJs0spq0hwiyWSsQTHz8fTr0H8smcF4TAE0884c3bzIMJGVDwCFgt9tprL9+bjQ8VhlT2QuZbtJZFYOHChd6CaU8o+zTL3xo/6h5KlkI4BMCesn3ttdfcv/71L0+Y797KJBwnTSnBE3xwUCdw58CEdTp/zBX9yle+4j2ys8USceP88jt+NE05zC/oY7267777HLKc30UN9d+C57RkUa6s4a/nCopwMEGH9eCWW25xs2fPDvpRxgWSWbGssatn7HP6aaTKNhYNFl0QrF7G64ddJ80E3tx79uyZdLJKrxUEKGMsRPfff7+bN29eqcxbeS2xx1af4mcSR/5z2H1PsMJCR3seP8eZi99v73U8vdauwZNhdpSrKVOm+Ojxzmpr79fbcylYGS5RPoiihYceesh/nEs+b/9KmvZihnCgkcPb8qBBg5r0DNubpt7LHwIffPBBcKZXXXVV17dv3+B0RbARgQceeMBPUbBObZZwKbUD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";
+
+// Hydrate inputs from state
+function hydrateInputs() {
+  document.getElementById('i-salon').value = state.salon || '';
+  document.getElementById('i-date').value = state.date || DEFAULT_STATE.date;
+  document.getElementById('i-fte').value = state.fte || '';
+  document.getElementById('i-days').value = state.days || 5;
+  document.getElementById('i-stylist').value = state.stylist || '';
+  document.getElementById('i-monthlyClients').value = state.monthlyClients || '';
+  document.getElementById('i-monthlyTreatments').value = state.monthlyTreatments || '';
+  document.getElementById('i-avgTicket').value = state.avgTicket || '';
+  document.getElementById('i-srp').value = state.srp;
+  document.getElementById('i-cogs').value = state.cogs;
+  document.getElementById('i-commission').value = state.commission;
+  document.getElementById('i-target').value = state.targetPct;
+  // Persona toggle
+  document.querySelectorAll('.persona-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.persona === state.persona);
+  });
+}
+hydrateInputs();
+
+// ========================================
+// HELPERS — all guard against NaN/Infinity
+// ========================================
+const safe = (n) => (Number.isFinite(n) ? n : 0);
+const fmt$ = (n) => '$' + Math.round(safe(n)).toLocaleString('en-US');
+const fmt$dec = (n) => '$' + safe(n).toFixed(2);
+const fmtN = (n) => Math.round(safe(n)).toLocaleString('en-US');
+const fmt1 = (n) => safe(n).toFixed(1);
+
+// ========================================
+// CALCULATIONS
+// ========================================
+function calc() {
+  const mc   = state.monthlyClients || 0;
+  const mt   = state.monthlyTreatments || 0;
+  const at   = state.avgTicket || 0;
+  const srp  = state.srp || 0;
+  const cogs = state.cogs || 0;
+  const comm = (state.commission || 0) / 100;
+  const target = (state.targetPct || 0) / 100;
+
+  // Current state
+  const currConvPct = mc > 0 ? (mt / mc) * 100 : 0;
+  const currMonthlyRev = mt * srp;
+  const currAnnualRev = currMonthlyRev * 12;
+
+  // Target state
+  const targetTreatments = Math.round(mc * target);
+  const targetMonthlyRev = targetTreatments * srp;
+  const targetMonthlyCOGS = targetTreatments * cogs;
+  const targetMonthlyGrossProfit = targetMonthlyRev - targetMonthlyCOGS;
+  const targetMonthlyCommissionPaid = targetMonthlyRev * comm;
+  const targetMonthlyNetSalon = targetMonthlyRev - targetMonthlyCOGS - targetMonthlyCommissionPaid;
+  const targetAnnualRev = targetMonthlyRev * 12;
+  const targetAnnualCOGS = targetMonthlyCOGS * 12;
+  const targetAnnualNetSalon = targetMonthlyNetSalon * 12;
+
+  // Persona-specific NET
+  let monthlyNet, annualNet, netLabel, netSub;
+  if (state.persona === 'owner') {
+    monthlyNet = targetMonthlyNetSalon;
+    annualNet  = targetAnnualNetSalon;
+    netLabel = '(to Salon)';
+    netSub = 'After COGS & stylist commission';
+  } else if (state.persona === 'commission') {
+    // Commission stylist: their cut = revenue × commission%
+    monthlyNet = targetMonthlyRev * comm;
+    annualNet  = monthlyNet * 12;
+    netLabel = '(to Stylist)';
+    netSub = `Commission earnings (${fmt$(srp * comm)}/treatment)`;
+  } else { // rental
+    // Rental: keeps SRP - COGS, no commission split
+    monthlyNet = targetMonthlyRev - targetMonthlyCOGS;
+    annualNet  = monthlyNet * 12;
+    netLabel = '(to Independent Stylist)';
+    netSub = `Net per treatment: ${fmt$(srp - cogs)} (SRP − COGS)`;
+  }
+
+  // Current net at current state for persona (to compute "lift")
+  let currMonthlyNet;
+  if (state.persona === 'owner') {
+    currMonthlyNet = (currMonthlyRev) - (mt * cogs) - (currMonthlyRev * comm);
+  } else if (state.persona === 'commission') {
+    currMonthlyNet = currMonthlyRev * comm;
+  } else {
+    currMonthlyNet = currMonthlyRev - (mt * cogs);
+  }
+  const currAnnualNet = currMonthlyNet * 12;
+
+  const annualLift = annualNet - currAnnualNet;
+
+  // Avg ticket lift
+  const currMonthlyServiceRev = mc * at;
+  const newMonthlyServiceRev = currMonthlyServiceRev + targetMonthlyRev;
+  const newAvgTicket = mc > 0 ? newMonthlyServiceRev / mc : 0;
+  const ticketLiftAbs = newAvgTicket - at;
+  const ticketLiftPct = at > 0 ? (ticketLiftAbs / at) * 100 : 0;
+
+  // 3-year compound view (added revenue per persona)
+  const yr1 = annualLift;
+  const yr2 = yr1 * 2;
+  const yr3 = yr1 * 3;
+
+  // ========================================
+  // OUTPUT — Section 2 reality summary
+  // ========================================
+  if (mc > 0 && mt >= 0) {
+    document.getElementById('reality-summary').innerHTML = `
+      You service <strong>${fmtN(mc)} clients/month</strong> and sell <strong>${fmtN(mt)} treatments/month</strong>.<br>
+      <span class="conv-pct">${currConvPct.toFixed(1)}%</span>
+      That's your current treatment conversion rate.
+    `;
+  } else {
+    document.getElementById('reality-summary').innerHTML =
+      'Enter your monthly client count and current treatment count above to see your starting reality.';
+  }
+
+  // ========================================
+  // OUTPUT — Section 3 math
+  // ========================================
+  document.getElementById('o-targetPct').textContent = state.targetPct;
+  document.getElementById('o-monthlyTreatments').textContent = fmtN(targetTreatments);
+  document.getElementById('o-monthlyTreatmentsSub').textContent = `at ${state.targetPct}% conversion of ${fmtN(mc)} clients`;
+  document.getElementById('o-monthlyRevenue').textContent = fmt$(targetMonthlyRev);
+  document.getElementById('o-monthlyRevenueSub').textContent = `${fmtN(targetTreatments)} × ${fmt$(srp)}`;
+  document.getElementById('o-annualRevenue').textContent = fmt$(targetAnnualRev);
+  document.getElementById('o-annualRevenueSub').textContent = 'gross sales × 12 months';
+
+  document.getElementById('netLabelHint').textContent = netLabel;
+  document.getElementById('netLabelHint2').textContent = netLabel;
+  document.getElementById('o-monthlyNet').textContent = fmt$(monthlyNet);
+  document.getElementById('o-monthlyNetSub').textContent = netSub;
+  document.getElementById('o-annualNet').textContent = fmt$(annualNet);
+  document.getElementById('o-annualNetSub').textContent = `${netLabel.replace(/[()]/g, '').trim()}, 12 months`;
+
+  document.getElementById('o-annualLift').textContent = fmt$(annualLift);
+  document.getElementById('o-annualLiftSub').textContent =
+    annualLift > 0
+      ? `vs. ${fmt$(currAnnualNet)} you're earning today`
+      : (mc > 0 ? `Adjust target conversion to see lift` : `Enter your reality first`);
+
+  // ========================================
+  // Persona-specific headline
+  // ========================================
+  const ph = document.getElementById('persona-headline');
+  ph.className = `persona-headline ${state.persona}`;
+  let phEyebrow, phValue, phSub;
+  if (state.persona === 'owner') {
+    phEyebrow = 'Annual Net to Salon (after COGS + commission)';
+    phValue = fmt$(annualNet);
+    phSub = `${fmtN(targetTreatments)} treatments/mo @ ${state.targetPct}% conversion · ${fmt$(annualLift)} more than today`;
+  } else if (state.persona === 'commission') {
+    phEyebrow = 'Annual Commission Income';
+    phValue = fmt$(annualNet);
+    phSub = `${fmt$(srp * comm)} per treatment · ${fmtN(targetTreatments)} treatments/mo · ${fmt$(annualLift)} more than today`;
+  } else {
+    phEyebrow = 'Annual Net Treatment Income (Independent — Keeps 100%)';
+    phValue = fmt$(annualNet);
+    phSub = `${fmt$(srp - cogs)} net per treatment · ${fmtN(targetTreatments)} treatments/mo · ${fmt$(annualLift)} more than today`;
+  }
+  document.getElementById('ph-eyebrow').textContent = phEyebrow;
+  document.getElementById('ph-value').textContent = phValue;
+  document.getElementById('ph-sub').textContent = phSub;
+
+  // ========================================
+  // OUTPUT — Section 4 Avg Ticket Lift
+  // ========================================
+  document.getElementById('o-currentTicket').textContent = at.toFixed(0);
+  document.getElementById('o-newTicket').textContent = newAvgTicket.toFixed(0);
+  document.getElementById('o-ticketLiftPct').textContent = ticketLiftPct.toFixed(1);
+  document.getElementById('o-ticketLiftSub').textContent =
+    ticketLiftAbs > 0
+      ? `Your average ticket moves from $${at.toFixed(0)} to $${newAvgTicket.toFixed(0)} — a ${fmt$(ticketLiftAbs * mc)} monthly revenue lift.`
+      : `Same clients. Same chairs. One conversation.`;
+
+  document.getElementById('o-year1').textContent = fmt$(yr1);
+  document.getElementById('o-year2').textContent = fmt$(yr2);
+  document.getElementById('o-year3').textContent = fmt$(yr3);
+
+  // ========================================
+  // PERSONA-SPECIFIC UI VISIBILITY
+  // ========================================
+  // FTE — owner only
+  document.getElementById('f-fte').style.display = (state.persona === 'owner') ? '' : 'none';
+  // Name-field label flips per persona — Owner sees "Owner Name", others see "Stylist Name"
+  document.getElementById('lbl-stylist').textContent =
+    (state.persona === 'owner') ? 'Owner Name' : 'Stylist Name';
+  // COGS input — owner + rental only (commission stylist doesn't see costs)
+  document.getElementById('f-cogs').style.display = (state.persona === 'commission') ? 'none' : '';
+  // Commission input — owner + commission stylist only (rental doesn't pay commission)
+  document.getElementById('f-commission').style.display = (state.persona === 'rental') ? 'none' : '';
+
+  // Result cards — show only what's relevant to THIS persona's take-home
+  if (state.persona === 'commission') {
+    // Commission stylist: hide gross revenue cards (those are salon's, not theirs).
+    // Show ONLY their commission take-home + lift.
+    document.getElementById('rc-monthlyRev').style.display = 'none';
+    document.getElementById('rc-annualRev').style.display = 'none';
+    document.getElementById('lbl-monthlyRev').textContent = 'Monthly Treatment Revenue';
+    // Relabel net cards for clarity
+    document.getElementById('netLabelHint').textContent  = '(Your Commission)';
+    document.getElementById('netLabelHint2').textContent = '(Your Commission)';
+  } else if (state.persona === 'rental') {
+    // Rental: collects 100%, no commission split.
+    // Show gross revenue (it's theirs) + net (after COGS).
+    document.getElementById('rc-monthlyRev').style.display = '';
+    document.getElementById('rc-annualRev').style.display = '';
+    document.getElementById('lbl-monthlyRev').textContent  = 'Monthly Revenue Collected';
+    document.getElementById('lbl-annualRev').textContent   = 'Annual Revenue Collected';
+    document.getElementById('netLabelHint').textContent  = '(After COGS — Yours to Keep)';
+    document.getElementById('netLabelHint2').textContent = '(After COGS — Yours to Keep)';
+  } else { // owner
+    document.getElementById('rc-monthlyRev').style.display = '';
+    document.getElementById('rc-annualRev').style.display = '';
+    document.getElementById('lbl-monthlyRev').textContent  = 'Monthly Treatment Revenue';
+    document.getElementById('lbl-annualRev').textContent   = 'Annual Treatment Revenue';
+    document.getElementById('netLabelHint').textContent  = '(Salon Net)';
+    document.getElementById('netLabelHint2').textContent = '(Salon Net)';
+  }
+
+  // ========================================
+  // OUTPUT — Monday Playbook (persona-specific quick-hit)
+  // ========================================
+  renderPlaybook({
+    targetTreatments, srp, comm, annualNet, annualLift,
+    currConvPct, targetPct: state.targetPct, mc, mt
+  });
+
+  // ========================================
+  // OUTPUT — Building a Treatment Culture (the deeper roadmap)
+  // ========================================
+  renderRoadmap();
+
+  // Persist
+  saveState();
+
+  // Expose for PDF
+  window._calcResult = {
+    currConvPct, currMonthlyRev, currAnnualRev, currMonthlyNet, currAnnualNet,
+    targetTreatments, targetMonthlyRev, targetAnnualRev, monthlyNet, annualNet, annualLift,
+    newAvgTicket, ticketLiftAbs, ticketLiftPct, yr1, yr2, yr3, netLabel
+  };
+}
+
+// ========================================
+// PLAYBOOK — persona-specific Monday action items
+// Independent Stylist does NOT receive a playbook section — only the Roadmap.
+// Triads (Breakage/Dry/Fine → BOND BUILDING/HYDRATION/VOLUME) render as
+// stacked bullet lists for visual scannability.
+// ========================================
+function renderPlaybook({ targetTreatments, srp, comm, annualNet, annualLift, currConvPct, targetPct, mc, mt }) {
+  const wrap = document.getElementById('playbook');
+  const itemsEl = document.getElementById('playbook-items');
+  const titleEl = document.getElementById('playbook-title');
+
+  // Independent persona: hide the entire playbook section, only Roadmap shows
+  if (state.persona === 'rental') {
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = '';
+  wrap.className = `playbook ${state.persona}`;
+
+  const perTreatmentStylist = fmt$(srp * comm);
+  const gap = Math.max(0, targetTreatments - mt);
+
+  // Shared HTML snippet for the Breakage/Dry/Fine triad — clean stacked bullets
+  const triadBlock = `
+    <div class="triad-block">
+      <div class="triad-row"><div class="triad-concern"><strong>BREAKAGE</strong> <span class="triad-sub">(chemical or mechanical damage)</span></div><div class="triad-remedy"><span class="triad-arrow">→</span> <strong>BOND BUILDING</strong></div></div>
+      <div class="triad-row"><div class="triad-concern"><strong>DRY</strong> <span class="triad-sub">(parched, faded, brittle ends)</span></div><div class="triad-remedy"><span class="triad-arrow">→</span> <strong>HYDRATION</strong></div></div>
+      <div class="triad-row"><div class="triad-concern"><strong>FINE</strong> <span class="triad-sub">(limp, weighed-down, lacking body)</span></div><div class="triad-remedy"><span class="triad-arrow">→</span> <strong>VOLUME</strong></div></div>
+    </div>`;
+
+  let title, items;
+  if (state.persona === 'owner') {
+    title = 'Owner Playbook — Move from Today to Target';
+    items = [
+      `<strong>Set the bar.</strong> Communicate the ${targetPct}% conversion goal to every stylist. Today the salon sits at ${currConvPct.toFixed(1)}% — the path forward is <strong>${fmtN(gap)} more treatments per month</strong>.`,
+      `<strong>Make it visible.</strong> Post the daily treatment count somewhere stylists see it. What gets measured gets sold.`,
+      `<strong>Train the consultation.</strong> Build a consistent diagnostic routine around the three concerns the R+Co Treatments solve:` + triadBlock + `When a Stylist increases their comfort in the Diagnosis, the Treatment becomes the Remedy, not the upsell. Train it like a clinical skill and audit it monthly.`,
+      `<strong>Re-invest.</strong> The ${fmt$(annualLift)} annual lift can fund a team retreat, a culture-building experience, a brand campaign, or a Team Wide Education Excursion. Plan where it goes <em>before</em> it shows up.`,
+    ];
+  } else { // commission
+    title = 'Commission Stylist Playbook — Diagnose, Then Prescribe';
+    items = [
+      `<strong>${perTreatmentStylist} per treatment.</strong> Every treatment you add puts that in your pocket. ${fmtN(targetTreatments)} treatments/month = <strong>${fmt$(annualNet)}/year</strong>.`,
+      `<strong>Lead with the consultation.</strong> Before you touch the hair, run a quick 4-question discovery. <em>These are guidelines — use your own style and language, or change it up entirely:</em>
+        <div class="consult-block">
+          <div class="consult-row"><span class="consult-num">1</span>"Tell me what's working for you right now."</div>
+          <div class="consult-row"><span class="consult-num">2</span>"What would you change if you could change anything?"</div>
+          <div class="consult-row"><span class="consult-num">3</span>"Walk me through your day-to-day — styling time, products, how often you wash."</div>
+          <div class="consult-row"><span class="consult-num">4</span>"When I run my fingers through, here's what I'm feeling — Breakage, Dry, or Fine. Tell me if that lines up with what you're experiencing at home."</div>
+        </div>
+        You're not interrogating — you're conversing. By the time you've asked these four, you'll know exactly which R+Co Treatment is the remedy.`,
+      `<strong>The Diagnostic — Breakage, Dry, or Fine.</strong>` + triadBlock + `When you find a real condition, that's your opening to recommend the matching R+Co Treatment as the <em>remedy</em>, not the upsell. Let the diagnosis lead.`,
+      `<strong>Increase your comfort level to make the Diagnosis part of every conversation.</strong>` + triadBlock + `The diagnosis earns the recommendation — no sell required.`,
+    ];
+  }
+
+  titleEl.textContent = title;
+  itemsEl.innerHTML = items.map((html, i) => `
+    <div class="playbook-item">
+      <div class="playbook-num">${i + 1}</div>
+      <div class="playbook-text">${html}</div>
+    </div>
+  `).join('');
+}
+
+// ========================================
+// ROADMAP — Building a Treatment Culture (per persona)
+// Items can include optional `sub` arrays for indented sub-steps.
+// ========================================
+const ROADMAPS = {
+  owner: {
+    eyebrow: 'The Long Game — Owner Edition',
+    title: 'Building a Treatment Culture',
+    sub: 'Seven moves to make Treatments part of how your salon runs — not an upsell, but the ethos.',
+    items: [
+      {
+        title: 'Brand the DNA of Healthy Hair.',
+        body: 'Make it part of the salon\'s identity — tagline, signage, bio, front-desk language. <em>"Healthy Hair has no competition."</em> When healthy hair IS the ethos, Treatments aren\'t an upsell — they\'re who you are.',
+      },
+      {
+        title: 'Run a Treatment Day Training.',
+        body: 'A Training Day where the team experiences the full R+Co Treatment journey on each other\'s hair. Every stylist gives and receives every Treatment from a teammate. They learn the experience by living it. Make it fun.',
+      },
+      {
+        title: 'Practice the Treatment Journey end-to-end.',
+        body: 'Train the Service Flow until every stylist can run it in their sleep:',
+        sub: [
+          '<strong>The diagnosis</strong> — practice reading the hair for the primary concern (Breakage, Dry, or Fine) and calling out the matching remedy.<br><em class="sub-note">This can happen at the chair or at the back bar.</em>',
+          '<strong>The call-out</strong> — <em>"Your ends are dry — here\'s the remedy"</em>',
+          '<strong>The delivery</strong> — including a 5-minute relaxing shampoo massage at the back bar',
+          '<strong>The post-Treatment check-in</strong> — <em>"How does it feel? Do you love it?"</em>',
+          '<strong>The take-home recommendation</strong> — what they need to maintain the result',
+        ],
+      },
+      {
+        title: 'Build Treatments into the service menu.',
+        body: '<strong>Treatment Cuts. Treatment Color Services. Treatment Blowouts.</strong> Bundled offerings priced to make the Treatment the obvious yes — and a permanent line item in your software\'s service menu.',
+      },
+      {
+        title: 'Launch the Bounce-Back Gift.',
+        body: 'Every new client leaves with a complimentary R+Co Treatment redeemable on their <em>next</em> visit (90-day expiry). Earns Visit 2. Plants the Treatment seed before they even sit in the chair again.',
+      },
+      {
+        title: 'Fund Surprise &amp; Delight — 3 per week.',
+        body: '<strong>$18/week per stylist</strong> to gift 3 Treatments weekly to <strong>clients who are in need</strong> — this is on-the-job training in spotting Breakage, Dry, or Fine, and matching the right R+Co Treatment. The retail maintenance recommendation that follows pays for the gratis Treatment. <strong>Track every recipient</strong> — they\'re your highest-propensity buyers for a paid repeat. <strong>Run this as a 30-day commitment</strong>, then pause to analyze the results before reinvesting in the next 30-day cycle. The data tells you whether to scale, sustain, or rework.',
+      },
+      {
+        title: 'Treatment Day with R+Co.',
+        body: 'Once the team is fluent, market an <strong>R+Co Treatment Day</strong> during a promotional period the salon naturally celebrates — your Salon Anniversary, a Client Appreciation Week, a seasonal moment. Every client who books on that specific day receives the gift of an R+Co Treatment.',
+      },
+    ],
+  },
+  commission: {
+    eyebrow: 'The Long Game — Commission Stylist Edition',
+    title: 'Build Your Treatment Practice',
+    sub: 'Three moves to make Treatments a permanent revenue stream behind your chair.',
+    items: [
+      {
+        title: 'Build Your Voice of Authority with Treatment.',
+        body: 'Your social IS your portfolio — and TikTok is where Gen Z clients are discovering stylists today. Below is a light framework to start:',
+        sub: [
+          '<strong>Before / After Treatment Transformations</strong> — anchor each one to a specific R+Co Treatment (BOND BUILDING, HYDRATION, or VOLUME). Film vertical, 15–30 seconds, before-shot first, jump-cut to the reveal.',
+          '<strong>Diagnostic Micro-Education</strong> — 30-second tips that tie the concern to the remedy. <em>"How to spot Breakage on every client."</em> <em>"Three signs your hair is begging for Hydration."</em> <em>"Why Fine hair gets weighed down — and what to use instead."</em>',
+          '<strong>Behind-the-Chair Process</strong> — the diagnosis, the shampoo ritual, the post-Treatment reveal. Show new clients what it feels like to sit in your chair <em>before</em> they book.',
+          '<strong>GRWM with R+Co</strong> — your own at-home maintenance routine using the R+Co retail products. You\'re not selling — you\'re showing the routine you actually use.',
+        ],
+      },
+      {
+        title: 'Dry-run the diagnostic flow on your fellow stylists.',
+        body: 'Treat each other. In-salon training, on each other\'s hair. Practice the full arc:',
+        sub: [
+          '<strong>The diagnosis</strong> — read the hair (Breakage, Dry, or Fine)',
+          '<strong>The introduction language</strong> — how you offer the remedy',
+          '<strong>The shampoo ritual</strong> — a 5-minute deep massage that turns the wash into the <em>experience</em>',
+          '<strong>The post-Treatment check-in</strong> — <em>"Feel your hair. Do you love it?"</em>',
+          '<strong>The take-home recommendation</strong> — what they need from R+Co to maintain it',
+        ],
+      },
+      {
+        title: 'Increase your comfort level to make the Diagnosis part of every conversation.',
+        body: '<div class="triad-block">' +
+          '<div class="triad-row"><div class="triad-concern"><strong>BREAKAGE</strong> <span class="triad-sub">(chemical or mechanical damage)</span></div><div class="triad-remedy"><span class="triad-arrow">→</span> <strong>BOND BUILDING</strong></div></div>' +
+          '<div class="triad-row"><div class="triad-concern"><strong>DRY</strong> <span class="triad-sub">(parched, faded, brittle ends)</span></div><div class="triad-remedy"><span class="triad-arrow">→</span> <strong>HYDRATION</strong></div></div>' +
+          '<div class="triad-row"><div class="triad-concern"><strong>FINE</strong> <span class="triad-sub">(limp, weighed-down, lacking body)</span></div><div class="triad-remedy"><span class="triad-arrow">→</span> <strong>VOLUME</strong></div></div>' +
+        '</div>',
+      },
+    ],
+  },
+  rental: {
+    eyebrow: 'The Long Game — Independent Stylist Edition',
+    title: 'Own the Treatment Business',
+    sub: 'Five moves to make Treatments a core line of your independent practice — and your highest-margin add-on.',
+    items: [
+      {
+        title: 'Brand around Healthy Hair.',
+        body: 'Make it the through-line in your marketing, your bio, your booking page. When <em>Healthy Hair</em> is your message, recommending an R+Co Treatment is a frictionless extension — not a sell.',
+      },
+      {
+        title: 'Map R+Co Treatments into your social content.',
+        body: 'Treatment-focused TikTok + IG content drives discovery and positions you as the Treatment expert in your market.',
+      },
+      {
+        title: 'Fund Surprise &amp; Delight — 3 clients per week.',
+        body: '<strong>$18/week investment</strong> to gift 3 R+Co Treatments weekly. Hand-pick the 3 clients most likely to integrate Treatments into their regular routine — you know them best. <strong>Track every recipient</strong> in a simple spreadsheet (name, date, Treatment given, whether they bought retail to maintain). The retail maintenance recommendation that follows pays for the gratis Treatment, and the tracker tells you who comes back for a paid repeat — your highest-yield clients.',
+      },
+      {
+        title: 'Build Treatments as a bookable add-on in your software.',
+        body: 'When clients book online, the Treatment option is right there alongside the cut or color. Friction kills add-ons; structure removes it.',
+      },
+      {
+        title: 'Create bundled Treatment Services.',
+        body: 'Haircut $125. R+Co Treatment $35 standalone. <strong>Treatment Cut $155</strong> — bundled value the client doesn\'t want to skip. Same logic for <em>Treatment Color</em>. The math works for both of you.',
+      },
+    ],
+  },
+};
+
+function renderRoadmap() {
+  const wrap     = document.getElementById('roadmap');
+  const eyebrow  = document.getElementById('roadmap-eyebrow');
+  const titleEl  = document.getElementById('roadmap-title');
+  const subEl    = document.getElementById('roadmap-sub');
+  const itemsEl  = document.getElementById('roadmap-items');
+  const data = ROADMAPS[state.persona] || ROADMAPS.owner;
+
+  wrap.className = `roadmap ${state.persona}`;
+  eyebrow.textContent = data.eyebrow;
+  titleEl.textContent = data.title;
+  subEl.textContent   = data.sub;
+
+  itemsEl.innerHTML = data.items.map((item, i) => {
+    const subListHtml = item.sub && item.sub.length
+      ? `<div class="roadmap-sublist">${item.sub.map(s => `<div class="sub-item">${s}</div>`).join('')}</div>`
+      : '';
+    return `
+      <div class="roadmap-item">
+        <div class="roadmap-num">${i + 1}</div>
+        <div class="roadmap-body">
+          <strong>${item.title}</strong><br>${item.body}
+          ${subListHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ========================================
+// WIRING
+// ========================================
+function bindInput(id, key, parseFn = parseFloat) {
+  const el = document.getElementById(id);
+  el.addEventListener('input', e => {
+    const v = parseFn(e.target.value);
+    state[key] = isNaN(v) ? 0 : v;
+    calc();
+  });
+}
+bindInput('i-fte', 'fte');
+bindInput('i-days', 'days');
+bindInput('i-monthlyClients', 'monthlyClients');
+bindInput('i-monthlyTreatments', 'monthlyTreatments');
+bindInput('i-avgTicket', 'avgTicket');
+bindInput('i-srp', 'srp');
+bindInput('i-cogs', 'cogs');
+bindInput('i-commission', 'commission');
+bindInput('i-target', 'targetPct');
+
+document.getElementById('i-salon').addEventListener('input', e => { state.salon = e.target.value; saveState(); });
+document.getElementById('i-stylist').addEventListener('input', e => { state.stylist = e.target.value; saveState(); });
+document.getElementById('i-date').addEventListener('input', e => { state.date = e.target.value; saveState(); });
+
+// Persona toggle
+document.querySelectorAll('.persona-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.persona-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.persona = btn.dataset.persona;
+    calc();
+  });
+});
+
+// Reset wiring (two buttons — header "New" and footer "Start Over")
+function resetAll() {
+  if (!confirm('Clear all inputs and start a fresh partner session?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = { ...DEFAULT_STATE };
+  hydrateInputs();
+  calc();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+document.getElementById('btn-reset').addEventListener('click', resetAll);
+document.getElementById('btn-reset-2').addEventListener('click', resetAll);
+
+// PDF wiring
+document.getElementById('btn-pdf').addEventListener('click', generatePDF);
+
+// ========================================
+// PDF GENERATION
+// ========================================
+// Layout: US Letter (612 x 792 pt). Margins 50pt. Usable width = 512pt.
+// Every text block uses splitTextToSize() to prevent right-side bleed.
+// Spacing is computed sequentially — no overlapping boxes.
+function generatePDF() {
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    alert('PDF library failed to load. Check your internet connection and try again.');
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+
+  const PAGE_W = 612, PAGE_H = 792;
+  const M = 50;                        // page margin (left & right)
+  const CONTENT_W = PAGE_W - (M * 2);   // 512pt — never exceed this
+
+  // ── PDF text sanitizer ────────────────────────────────────────
+  // jsPDF's default Helvetica doesn't support many Unicode glyphs (→, —, –,
+  // middle-dot, curly quotes, etc.) — when unsupported chars hit doc.text(),
+  // the renderer emits weird letter-spaced output AND can blow past the right
+  // margin. This sanitizer normalizes every string to safe ASCII before drawing.
+  const pdfSan = s => (s == null ? '' : String(s))
+    .replace(/→/g, '->').replace(/←/g, '<-').replace(/⇒/g, '=>').replace(/⇐/g, '<=')
+    .replace(/—/g, ' - ').replace(/–/g, '-').replace(/­/g, '')
+    .replace(/[""„]/g, '"').replace(/['']/g, "'").replace(/…/g, '...')
+    .replace(/·/g, '-').replace(/•/g, '-')
+    .replace(/®/g, '(R)').replace(/©/g, '(c)').replace(/™/g, '(TM)')
+    .replace(/[^\x00-\x7F]/g, '')   // strip any other non-ASCII as final safety net
+    .replace(/\s+/g, ' ').trim();
+  const FOOTER_Y = PAGE_H - 36;
+  let y = 0;
+
+  const r = window._calcResult || {};
+  const personaLabel = state.persona === 'owner' ? 'Owner View'
+                     : state.persona === 'commission' ? 'Commission Stylist View'
+                     : 'Independent Stylist View';
+  const personaColor = state.persona === 'owner' ? [20, 182, 181]
+                     : state.persona === 'commission' ? [253, 129, 141]
+                     : [42, 157, 92];
+
+  // Helper — draws the branded black header band with the R+Co logo image
+  function drawHeader(opts) {
+    const h = opts.tall ? 70 : 50;
+    doc.setFillColor(0, 0, 0);
+    doc.rect(0, 0, PAGE_W, h, 'F');
+    // Logo (use embedded image if loaded, else fall back to text)
+    if (_logoDataUrl) {
+      // Logo image is ~4:3 — render at height ≈ 30pt tall
+      const logoH = opts.tall ? 34 : 26;
+      const logoW = logoH * (4 / 3);
+      const logoY = (h - logoH) / 2;
+      try { doc.addImage(_logoDataUrl, 'PNG', M, logoY, logoW, logoH); }
+      catch (e) {
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(opts.tall ? 22 : 16);
+        doc.text('R+Co', M, opts.tall ? 44 : 32);
+      }
+    } else {
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(opts.tall ? 22 : 16);
+      doc.text('R+Co', M, opts.tall ? 44 : 32);
+    }
+    // Right-side label
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(20, 182, 181);
+    doc.text(opts.label, PAGE_W - M, opts.tall ? 44 : 32, { align: 'right' });
+  }
+
+  // Build fingerprint pulled from the runtime legal layer (set in rcLegalLayer)
+  const fp = (window.__RC_BUILD || {});
+  const buildTag = fp.hash ? `Build ${fp.hash} · ${fp.bm || ''} · ${fp.date || ''}` : '';
+
+  // Legally weighted footer — appears on every page of every PDF.
+  // Line 1: short copyright + page number. Line 2: full proprietary notice.
+  // Line 3: build fingerprint (forensic traceability).
+  function drawPdfLegalFooter(pageNum) {
+    const FY = PAGE_W / 2;
+    // Black hairline above footer text
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.4);
+    doc.line(M, FOOTER_Y - 22, PAGE_W - M, FOOTER_Y - 22);
+
+    // Line 1 — brand + page
+    doc.setTextColor(120, 120, 130);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.text('© 2026 R+Co / R+Coach · Treatment Revenue Model · Page ' + pageNum,
+      FY, FOOTER_Y - 14, { align: 'center' });
+
+    // Line 2 — wrapped legal notice
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(150, 150, 160);
+    const notice = 'PROPRIETARY & CONFIDENTIAL · TRADE SECRET PROTECTED · Authorized for the named recipient only · Reproduction, reverse-engineering, or derivative use is prohibited under the Defend Trade Secrets Act and applicable copyright law.';
+    const noticeLines = doc.splitTextToSize(notice, PAGE_W - (M * 2));
+    doc.text(noticeLines, FY, FOOTER_Y - 6, { align: 'center' });
+
+    // Line 3 — forensic build tag
+    if (buildTag) {
+      doc.setFontSize(5.5);
+      doc.setTextColor(180, 180, 188);
+      doc.text(buildTag, FY, FOOTER_Y + 2, { align: 'center' });
+    }
+  }
+
+  // Embed build metadata in the PDF properties (visible in File > Properties)
+  try {
+    doc.setProperties({
+      title: 'R+Co Treatment Revenue Model — ' + (state.salon || 'Partner'),
+      subject: 'Confidential Salon Growth Assessment',
+      author: 'R+Co / R+Coach',
+      creator: 'R+Coach',
+      keywords: 'R+Co, R+Coach, Treatment, Confidential, ' + (fp.hash || ''),
+    });
+  } catch (e) {}
+
+  // ============== PAGE 1 ==============
+  drawHeader({ tall: true, label: 'TREATMENT REVENUE MODEL' });
+  y = 100;
+
+  // Partner banner — all text sanitized for jsPDF
+  const salon = state.salon || 'Partner Salon';
+  const stylist = state.stylist ? '  -  ' + state.stylist : '';
+  const dateStr = state.date ? new Date(state.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+  doc.setTextColor(0, 0, 0);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(20);
+  const partnerLines = doc.splitTextToSize(pdfSan(salon + stylist), CONTENT_W);
+  doc.text(partnerLines, M, y);
+  y += (partnerLines.length * 22);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.setTextColor(94, 94, 94);
+  doc.text(pdfSan(dateStr + '   -   ' + personaLabel), M, y + 4);
+  y += 28;
+
+  // Persona color bar
+  doc.setFillColor(personaColor[0], personaColor[1], personaColor[2]);
+  doc.rect(M, y, CONTENT_W, 3, 'F');
+  y += 22;
+
+  // ====== Section A: Current Reality ======
+  doc.setTextColor(20, 182, 181);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('CURRENT REALITY', M, y);
+  y += 16;
+
+  doc.setTextColor(0, 0, 0);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  const realityTxt = pdfSan(`${fmtN(state.monthlyClients)} clients/month  -  ${fmtN(state.monthlyTreatments)} treatments sold/month  -  ${fmt1(r.currConvPct)}% current conversion`);
+  const realityLines = doc.splitTextToSize(realityTxt, CONTENT_W);
+  doc.text(realityLines, M, y);
+  y += (realityLines.length * 14) + 8;
+
+  doc.setTextColor(94, 94, 94);
+  doc.setFontSize(10);
+  const realitySub = pdfSan(`Average service ticket today: $${state.avgTicket || 0}.   Treatment SRP: $${state.srp}.   COGS: $${state.cogs}.   Stylist commission: ${state.commission}%.`);
+  const realitySubLines = doc.splitTextToSize(realitySub, CONTENT_W);
+  doc.text(realitySubLines, M, y);
+  y += (realitySubLines.length * 13) + 22;
+
+  // ====== Section B: The Big Number (persona-tinted block) ======
+  const bigBoxH = 110;
+  doc.setFillColor(personaColor[0], personaColor[1], personaColor[2]);
+  doc.roundedRect(M, y, CONTENT_W, bigBoxH, 8, 8, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text(`ANNUAL OPPORTUNITY AT ${state.targetPct}% CONVERSION`, M + 20, y + 26);
+  doc.setFontSize(40);
+  doc.text(fmt$(r.annualNet), M + 20, y + 70);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  const liftLine = pdfSan(`${fmt$(r.annualLift)} more than today  -  ${fmtN(r.targetTreatments)} treatments/month`);
+  doc.text(liftLine, M + 20, y + 92);
+  y += bigBoxH + 26;
+
+  // ====== Section C: Math grid (3 rows × 2 cols, no overlap) ======
+  doc.setTextColor(20, 182, 181);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('THE MATH', M, y);
+  y += 14;
+
+  // 2-column grid with gutter
+  const COL_GAP = 16;
+  const COL_W = (CONTENT_W - COL_GAP) / 2;
+  const ROW_H = 56;
+  // Persona-specific math grid — only show what matters to THIS audience
+  let cells;
+  if (state.persona === 'commission') {
+    // Commission stylist: focus on THEIR earnings, not salon gross
+    cells = [
+      ['Monthly Treatments at Target', fmtN(r.targetTreatments), 'treatments/mo'],
+      [`Per-Treatment Commission`, fmt$(state.srp * (state.commission/100)), `${state.commission}% of $${state.srp} SRP`],
+      ['Monthly Commission Earned', fmt$(r.monthlyNet || (r.targetMonthlyRev * state.commission/100)), 'your take-home'],
+      ['Annual Commission Earned', fmt$(r.annualNet), 'your annual income from treatments'],
+      ['Annual Income Today (treatments)', fmt$(r.currAnnualNet), 'where you are now'],
+      ['Annual Lift Over Today', fmt$(r.annualLift), 'opportunity created'],
+    ];
+  } else if (state.persona === 'rental') {
+    // Rental: revenue collected = theirs (no commission split). Show gross + net of COGS.
+    cells = [
+      ['Monthly Treatments at Target', fmtN(r.targetTreatments), 'treatments/mo'],
+      ['Monthly Revenue Collected', fmt$(r.targetMonthlyRev), '100% yours'],
+      ['Annual Revenue Collected', fmt$(r.targetAnnualRev), '100% yours, 12 months'],
+      ['Annual Net (after COGS)', fmt$(r.annualNet), `${fmt$(state.srp - state.cogs)} per treatment kept`],
+      ['Annual Net Today', fmt$(r.currAnnualNet), 'where you are now'],
+      ['Annual Lift Over Today', fmt$(r.annualLift), 'opportunity created'],
+    ];
+  } else {
+    // Owner: full visibility
+    cells = [
+      ['Monthly Treatments at Target', fmtN(r.targetTreatments), 'treatments/mo'],
+      ['Monthly Treatment Revenue', fmt$(r.targetMonthlyRev), 'gross sales'],
+      ['Annual Treatment Revenue', fmt$(r.targetAnnualRev), 'gross × 12'],
+      ['Annual Net to Salon', fmt$(r.annualNet), 'after COGS + commission'],
+      ['Annual Net Today', fmt$(r.currAnnualNet), 'where you are now'],
+      ['Annual Lift Over Today', fmt$(r.annualLift), 'opportunity created'],
+    ];
+  }
+  cells.forEach((cell, i) => {
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    const cx = M + col * (COL_W + COL_GAP);
+    const cy = y + row * (ROW_H + 10);
+    doc.setFillColor(244, 245, 247);
+    doc.roundedRect(cx, cy, COL_W, ROW_H, 6, 6, 'F');
+    doc.setTextColor(94, 94, 94);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    const labelLines = doc.splitTextToSize(pdfSan(cell[0]).toUpperCase(), COL_W - 24);
+    doc.text(labelLines, cx + 12, cy + 16);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(18);
+    doc.text(pdfSan(cell[1]), cx + 12, cy + 38);
+    doc.setTextColor(142, 142, 147);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text(pdfSan(cell[2]), cx + 12, cy + 50);
+  });
+  y += (Math.ceil(cells.length / 2) * (ROW_H + 10)) + 14;
+
+  // Footer page 1 — branded, paginated, AND legally weighted
+  drawPdfLegalFooter(1);
+
+  // ============== PAGE 2 ==============
+  doc.addPage();
+  drawHeader({ tall: false, label: 'THE POWER OF ADD-ON SERVICES' });
+  y = 80;
+
+  // Ticket comparison
+  doc.setTextColor(20, 182, 181);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('AVERAGE TICKET LIFT', M, y);
+  y += 18;
+
+  const ticketBoxW = (CONTENT_W - 30) / 2;
+  // Today box
+  doc.setFillColor(244, 245, 247);
+  doc.roundedRect(M, y, ticketBoxW, 80, 8, 8, 'F');
+  doc.setTextColor(94, 94, 94);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.text('TODAY', M + 16, y + 22);
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(28);
+  doc.text('$' + (state.avgTicket || 0), M + 16, y + 54);
+  doc.setTextColor(94, 94, 94);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.text('avg ticket', M + 16, y + 68);
+
+  // Future box (teal-tinted)
+  const futureX = M + ticketBoxW + 30;
+  doc.setFillColor(230, 247, 247);
+  doc.roundedRect(futureX, y, ticketBoxW, 80, 8, 8, 'F');
+  doc.setTextColor(13, 137, 133);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.text(`WITH TREATMENTS AT ${state.targetPct}%`, futureX + 16, y + 22);
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(28);
+  doc.text('$' + Math.round(safe(r.newAvgTicket)), futureX + 16, y + 54);
+  doc.setTextColor(13, 137, 133);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text(`+${fmt1(r.ticketLiftPct)}% lift`, futureX + 16, y + 70);
+
+  y += 80 + 24;
+
+  // 3-Year Compound
+  doc.setTextColor(20, 182, 181);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('3-YEAR COMPOUND VIEW', M, y);
+  y += 18;
+
+  const yrCellW = (CONTENT_W - 20) / 3;
+  const yrCells = [
+    ['Year 1', fmt$(r.yr1), 'added revenue'],
+    ['Year 2', fmt$(r.yr2), 'cumulative'],
+    ['Year 3', fmt$(r.yr3), 'cumulative'],
+  ];
+  yrCells.forEach((c, i) => {
+    const cx = M + i * (yrCellW + 10);
+    doc.setDrawColor(230, 230, 230);
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(cx, y, yrCellW, 80, 8, 8, 'FD');
+    doc.setTextColor(13, 137, 133);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text(c[0].toUpperCase(), cx + 14, y + 22);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(20);
+    doc.text(c[1], cx + 14, y + 50);
+    doc.setTextColor(142, 142, 147);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text(c[2], cx + 14, y + 66);
+  });
+  y += 80 + 26;
+
+  // Playbook (persona-specific) — skip entirely for Independent persona
+  const playbookEl = document.getElementById('playbook');
+  const playbookVisible = playbookEl && playbookEl.style.display !== 'none';
+
+  if (playbookVisible) {
+    doc.setTextColor(personaColor[0], personaColor[1], personaColor[2]);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    const playbookTitle = pdfSan(document.getElementById('playbook-title').textContent).toUpperCase();
+    doc.text(playbookTitle, M, y);
+    y += 16;
+
+    // Walk each playbook item — preserve structure (body text + optional triad/consult block)
+    const items = Array.from(document.querySelectorAll('.playbook-item')).map(it => {
+      const textEl = it.querySelector('.playbook-text');
+      // Clone so we can pull out structured blocks separately without mutating live DOM
+      const clone = textEl.cloneNode(true);
+      // Triad block (Breakage/Dry/Fine → BOND BUILDING/HYDRATION/VOLUME)
+      const triadEl = clone.querySelector('.triad-block');
+      let triadRows = [];
+      if (triadEl) {
+        triadRows = Array.from(triadEl.querySelectorAll('.triad-row')).map(r => pdfSan(r.textContent));
+        triadEl.remove();
+      }
+      // Consult block (4-question discovery framework) — rendered with numbered rows
+      const consultEl = clone.querySelector('.consult-block');
+      let consultRows = [];
+      if (consultEl) {
+        consultRows = Array.from(consultEl.querySelectorAll('.consult-row')).map(r => {
+          // Strip the number element from textContent so we get just the question
+          const cloneRow = r.cloneNode(true);
+          const numEl = cloneRow.querySelector('.consult-num');
+          if (numEl) numEl.remove();
+          return pdfSan(cloneRow.textContent);
+        });
+        consultEl.remove();
+      }
+      const bodyText = pdfSan(clone.textContent);
+      return { body: bodyText, triad: triadRows, consult: consultRows };
+    });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    items.forEach((item, i) => {
+      // Pre-measure so we can decide on page break
+      const bodyLines = doc.splitTextToSize(item.body, CONTENT_W - 30);
+      const triadH = item.triad.length ? (item.triad.length * 14 + 14) : 0;
+      // Consult block — each question takes 2 lines of wrap room on average + padding
+      const consultH = item.consult.length ? (item.consult.length * 26 + 18) : 0;
+      const itemH = (bodyLines.length * 13) + triadH + consultH + 12;
+
+      // Page break guard — break BEFORE drawing if the item won't fit.
+      // Redraw the branded header band on the continuation page so content
+      // doesn't appear to float on a blank page (and prevents stray content
+      // from previous-page elements appearing to bleed into the top-left).
+      if (y + itemH > FOOTER_Y - 40 && i > 0) {
+        drawPdfLegalFooter(2);
+        doc.addPage();
+        drawHeader({ tall: false, label: 'THE POWER OF ADD-ON SERVICES (CONT.)' });
+        y = 90;
+      }
+
+      // Numbered dot
+      doc.setFillColor(personaColor[0], personaColor[1], personaColor[2]);
+      doc.circle(M + 8, y + 4, 8, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.text(String(i + 1), M + 8, y + 7, { align: 'center' });
+
+      // Body text — sanitized + wrapped within content width
+      doc.setTextColor(31, 31, 35);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text(bodyLines, M + 26, y + 7);
+      y += (bodyLines.length * 13) + 4;
+
+      // Triad block — stacked rows in a tinted box (matches in-app design)
+      // Border balance: pre-wrap each row, sum wrapped lines for an exact box
+      // height, then draw the colored bar flush with the box's left edge.
+      if (item.triad.length) {
+        const wrappedRows = item.triad.map(row =>
+          doc.splitTextToSize(row, CONTENT_W - 42));
+        const totalLines = wrappedRows.reduce((s, lines) => s + lines.length, 0);
+        const ROW_PAD = 6;          // pt added per row to space them apart
+        const TOP_BOT_PAD = 14;     // 7pt top + 7pt bottom
+        const boxH = totalLines * 13 + (wrappedRows.length - 1) * ROW_PAD + TOP_BOT_PAD;
+        const boxX = M + 26;
+        const boxW = CONTENT_W - 26;
+        // Gray box (background)
+        doc.setFillColor(248, 249, 250);
+        doc.rect(boxX, y, boxW, boxH, 'F');
+        // Colored left bar — flush with box left edge, full box height
+        doc.setFillColor(personaColor[0], personaColor[1], personaColor[2]);
+        doc.rect(boxX, y, 4, boxH, 'F');
+        // Text rows
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        let ty = y + 12;            // matches TOP_BOT_PAD/2 + font baseline offset
+        wrappedRows.forEach((lines, idx) => {
+          doc.text(lines, boxX + 12, ty);
+          ty += lines.length * 13 + (idx < wrappedRows.length - 1 ? ROW_PAD : 0);
+        });
+        y += boxH + 8;
+      }
+
+      // Consult block — 4-question discovery framework, numbered rows
+      // (rendered with persona-colored numbered circles + indented body text)
+      if (item.consult.length) {
+        const NUM_COL = 24;          // x-offset for the numbered circle column
+        const TEXT_COL = 42;         // x-offset for the question text
+        const wrappedQs = item.consult.map(q =>
+          doc.splitTextToSize(q, CONTENT_W - 26 - TEXT_COL - 8));
+        const totalLines = wrappedQs.reduce((s, lines) => s + lines.length, 0);
+        const ROW_PAD = 8;
+        const TOP_BOT_PAD = 16;
+        const boxH = totalLines * 13 + (wrappedQs.length - 1) * ROW_PAD + TOP_BOT_PAD;
+        const boxX = M + 26;
+        const boxW = CONTENT_W - 26;
+        // Background + left bar
+        doc.setFillColor(248, 249, 250);
+        doc.rect(boxX, y, boxW, boxH, 'F');
+        doc.setFillColor(personaColor[0], personaColor[1], personaColor[2]);
+        doc.rect(boxX, y, 4, boxH, 'F');
+        // Render each numbered question
+        let qy = y + 14;
+        wrappedQs.forEach((lines, idx) => {
+          // Numbered circle
+          doc.setFillColor(personaColor[0], personaColor[1], personaColor[2]);
+          doc.circle(boxX + NUM_COL, qy - 3, 6, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.text(String(idx + 1), boxX + NUM_COL, qy - 1, { align: 'center' });
+          // Question text — wraps with hanging indent
+          doc.setTextColor(31, 31, 35);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(10);
+          doc.text(lines, boxX + TEXT_COL, qy);
+          qy += lines.length * 13 + (idx < wrappedQs.length - 1 ? ROW_PAD : 0);
+        });
+        y += boxH + 8;
+      }
+
+      y += 8;
+    });
+  }
+
+  // Page 2 footer
+  drawPdfLegalFooter(2);
+
+  // ============== PAGE 3 — BUILDING A TREATMENT CULTURE ==============
+  doc.addPage();
+  drawHeader({ tall: false, label: 'BUILDING A TREATMENT CULTURE' });
+  y = 130;   // generous top breathing room — content was cramped against header
+
+  const roadmap = (typeof ROADMAPS !== 'undefined' && ROADMAPS[state.persona]) || null;
+  if (roadmap) {
+    // Persona color bar — well-spaced below the header band, above the eyebrow
+    doc.setFillColor(personaColor[0], personaColor[1], personaColor[2]);
+    doc.rect(M, y - 24, CONTENT_W, 3, 'F');
+
+    // Eyebrow + title + sub
+    doc.setTextColor(personaColor[0], personaColor[1], personaColor[2]);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text(pdfSan(roadmap.eyebrow).toUpperCase(), M, y);
+    y += 22;
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(22);
+    doc.text(pdfSan(roadmap.title), M, y);
+    y += 8;
+    y += 12;   // breathing room between title and sub
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(94, 94, 94);
+    const subLines = doc.splitTextToSize(pdfSan(roadmap.sub), CONTENT_W);
+    doc.text(subLines, M, y);
+    y += subLines.length * 13 + 22;
+
+    // Each numbered item
+    roadmap.items.forEach((item, i) => {
+      // Strip HTML tags AND sanitize Unicode for jsPDF rendering
+      // (jsPDF's default Helvetica doesn't support ->, em-dash, curly quotes, etc.
+      //  Unsupported chars cause weird letter-spacing + right-edge bleed.)
+      const stripAndSan = s => pdfSan(String(s).replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&'));
+
+      // Detect embedded triad-block HTML in body — if present, extract rows
+      // separately so the PDF renders them as a structured stacked box (matches
+      // the in-app design) instead of mashing them into a wall of text.
+      let bodyForRender = item.body || '';
+      let triadRowsRoadmap = [];
+      const triadMatch = /<div class="triad-block">([\s\S]*?)<\/div>\s*$/.exec(bodyForRender);
+      if (triadMatch) {
+        // Parse the inner rows
+        const parser = document.createElement('div');
+        parser.innerHTML = triadMatch[0];
+        triadRowsRoadmap = Array.from(parser.querySelectorAll('.triad-row')).map(r => pdfSan(r.textContent));
+        // Remove the triad block from the body so it doesn't double-render
+        bodyForRender = bodyForRender.replace(triadMatch[0], '').trim();
+      }
+
+      const titleTxt = stripAndSan(item.title);
+      const bodyTxt  = stripAndSan(bodyForRender);
+      const subLinesArr = (item.sub || []).map(stripAndSan);
+
+      // Pre-measure total height so we can page-break properly
+      const titleLines = doc.splitTextToSize(titleTxt, CONTENT_W - 36);
+      const bodyLines  = bodyTxt ? doc.splitTextToSize(bodyTxt, CONTENT_W - 36) : [];
+      // Wrap each sub-bullet's body WITHOUT the dash prefix — we'll draw the
+      // dash separately at a fixed X so wrapped lines hang-indent properly.
+      const subWrapped = subLinesArr.map(s => doc.splitTextToSize(s, CONTENT_W - 58));
+      const subTotalLines = subWrapped.reduce((s,L)=>s+L.length, 0);
+      // Triad block height pre-calculation (each row wraps to up to 2 lines)
+      const triadBlockH = triadRowsRoadmap.length
+        ? (triadRowsRoadmap.length * 30 + 18)
+        : 0;
+      const itemH =
+        titleLines.length * 13 +
+        bodyLines.length * 13 +
+        triadBlockH +
+        (subLinesArr.length ? 8 + subTotalLines * 12 + 8 : 0) +
+        14;
+
+      // Page break if needed (leave room for footer)
+      if (y + itemH > FOOTER_Y - 20) {
+        drawPdfLegalFooter(3);
+        doc.addPage();
+        drawHeader({ tall: false, label: 'BUILDING A TREATMENT CULTURE (CONT.)' });
+        y = 130;  // matches first-page breathing room
+      }
+
+      // Number badge — square, persona color
+      doc.setFillColor(personaColor[0], personaColor[1], personaColor[2]);
+      doc.roundedRect(M, y, 22, 22, 4, 4, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.text(String(i + 1), M + 11, y + 15, { align: 'center' });
+
+      // Title (bold)
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text(titleLines, M + 30, y + 10);
+      let py = y + 10 + titleLines.length * 13;
+
+      // Body (normal) — only render if there's body text after triad extraction
+      if (bodyLines.length) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(31, 31, 35);
+        doc.text(bodyLines, M + 30, py);
+        py += bodyLines.length * 13;
+      }
+
+      // Triad block — render as a structured stacked box matching the in-app design
+      // (Breakage/Dry/Fine each on their own row with concern + remedy stacked)
+      if (triadRowsRoadmap.length) {
+        py += 6;
+        const ROW_H = 28;             // each row = 2 lines (concern + remedy)
+        const TOP_BOT_PAD = 14;
+        const triadBoxH = triadRowsRoadmap.length * ROW_H + TOP_BOT_PAD - 4;
+        const tBoxX = M + 30;
+        const tBoxW = CONTENT_W - 30;
+        // Background tint
+        doc.setFillColor(248, 249, 250);
+        doc.rect(tBoxX, py - 6, tBoxW, triadBoxH, 'F');
+        // Persona-colored left bar — flush, 4pt wide, full height
+        doc.setFillColor(personaColor[0], personaColor[1], personaColor[2]);
+        doc.rect(tBoxX, py - 6, 4, triadBoxH, 'F');
+        // Render each row — concern on top, → remedy on bottom
+        triadRowsRoadmap.forEach((row, idx) => {
+          // Split "CONCERN (e.g.) → REMEDY" into concern + remedy parts
+          // The arrow '->' (post-sanitize) is the natural split point
+          const parts = row.split(/\s*->\s*/);
+          const concern = parts[0] || row;
+          const remedy = parts[1] || '';
+          const rowY = py + 4 + idx * ROW_H;
+          // Concern (bold)
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.setTextColor(0, 0, 0);
+          const concernLines = doc.splitTextToSize(concern, tBoxW - 24);
+          doc.text(concernLines, tBoxX + 14, rowY);
+          // Remedy on next line with persona-colored arrow
+          if (remedy) {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.setTextColor(personaColor[0], personaColor[1], personaColor[2]);
+            doc.text('->', tBoxX + 14, rowY + 14);
+            doc.setTextColor(0, 0, 0);
+            doc.text(remedy, tBoxX + 28, rowY + 14);
+          }
+        });
+        py += triadBoxH + 4;
+      }
+
+      // Sub-bullets in a tinted box — border balanced (color bar flush with box,
+      // box height matches the actual wrapped-line total, generous padding)
+      if (subLinesArr.length) {
+        py += 8;
+        const subBoxH = subTotalLines * 12 + 16;   // 8pt top + 8pt bottom padding
+        const subBoxX = M + 30;
+        const subBoxW = CONTENT_W - 30;
+        // Background tint
+        doc.setFillColor(244, 245, 247);
+        doc.rect(subBoxX, py - 6, subBoxW, subBoxH, 'F');
+        // Persona-colored left border — flush, 4pt wide, full height
+        doc.setFillColor(personaColor[0], personaColor[1], personaColor[2]);
+        doc.rect(subBoxX, py - 6, 4, subBoxH, 'F');
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(60, 60, 70);
+        // Hanging-indent layout — draw the dash at the bullet's left edge,
+        // then draw the wrapped text body at an indented X. All wrapped
+        // continuation lines align with the first character of the body
+        // (not under the dash).
+        const DASH_X = M + 38;       // dash sits at left of text column
+        const TEXT_X = M + 46;       // body text starts ~8pt right of dash
+        let spy = py + 4;
+        subWrapped.forEach(lines => {
+          // Draw the dash on the FIRST line only
+          doc.text('-', DASH_X, spy);
+          // Draw all wrapped lines (including line 1) at the indented body X
+          doc.text(lines, TEXT_X, spy);
+          spy += lines.length * 12;
+        });
+        py += subBoxH + 4;
+      }
+
+      y = py + 12;
+    });
+  }
+
+  // Final footer
+  drawPdfLegalFooter(3);
+
+  // Save
+  const safeName = (state.salon || 'partner').replace(/[^a-z0-9]+/gi, '_').toLowerCase();
+  doc.save(`RCo_Treatment_Model_${safeName}_${state.date}.pdf`);
+}
+
+// Initial calc
+calc();
+
+// ============================================================================
+// LAYER 1 LEGAL PROTECTION — Trade-secret deterrence + build fingerprint
+// ============================================================================
+(function rcLegalLayer() {
+  // -- Build fingerprint -----------------------------------------------------
+  // BRAND_MANAGER_ID is replaced at deploy-time per-BM. Default = MASTER build.
+  // Each deployed BM build gets a unique ID so any leaked copy is traceable.
+  const BRAND_MANAGER_ID = 'MASTER-DEV';                  // CHANGE PER BUILD
+  const APP_ID          = 'RCO-TREATMENT-REVENUE-MODEL';
+  const BUILD_DATE      = '2026.05.30';
+  const BUILD_HASH      = btoa(APP_ID + '|' + BRAND_MANAGER_ID + '|' + BUILD_DATE).slice(0, 16);
+  window.__RC_BUILD = { app: APP_ID, bm: BRAND_MANAGER_ID, date: BUILD_DATE, hash: BUILD_HASH };
+
+  // Surface fingerprint in the visible footer
+  const f = document.getElementById('legal-build-id');
+  if (f) f.textContent = `Build ${BUILD_HASH} · ${BRAND_MANAGER_ID} · ${BUILD_DATE}`;
+
+  // Console banner — anyone opening DevTools gets the notice
+  try {
+    console.log('%c⚠ R+Co / R+Coach — Proprietary & Confidential',
+      'background:#000;color:#FD818D;font-size:14px;font-weight:bold;padding:8px 14px');
+    console.log('%cThis software is trade-secret intellectual property of R+Co / R+Coach.\n' +
+      'Reproduction, reverse-engineering, or derivative use is prohibited and will be\n' +
+      'prosecuted under the Defend Trade Secrets Act (DTSA) and applicable law.\n\n' +
+      'Build fingerprint: ' + BUILD_HASH + ' · ' + BRAND_MANAGER_ID + ' · ' + BUILD_DATE,
+      'color:#666;font-size:11px;line-height:1.6');
+  } catch (e) {}
+
+  // -- Image drag protection — block lifting product photography ------------
+  document.addEventListener('dragstart', function (e) {
+    if (e.target && e.target.tagName === 'IMG') e.preventDefault();
+  });
+
+  // -- Right-click handler — polite modal, signals intent -------------------
+  document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+    showRcLegalModal();
+  });
+
+  // Block common save/view-source shortcuts (deterrence, not prevention)
+  document.addEventListener('keydown', function (e) {
+    const k = (e.key || '').toLowerCase();
+    if ((e.metaKey || e.ctrlKey) && (k === 's' || k === 'u')) {
+      e.preventDefault();
+      showRcLegalModal();
+    }
+  });
+
+  function showRcLegalModal() {
+    if (document.getElementById('rc-legal-modal')) return;
+    const m = document.createElement('div');
+    m.id = 'rc-legal-modal';
+    m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:9999;' +
+      'display:flex;align-items:center;justify-content:center;padding:20px;' +
+      'animation:rcFade 0.18s ease;font-family:Helvetica Neue,Helvetica,Arial,sans-serif';
+    m.innerHTML =
+      '<div style="background:white;max-width:420px;padding:28px 26px;border-radius:14px;' +
+      'box-shadow:0 20px 60px rgba(0,0,0,0.4)">' +
+        '<div style="font-size:10px;font-weight:800;letter-spacing:0.18em;text-transform:uppercase;' +
+        'color:#FD818D;margin-bottom:10px">© R+Coach 2026 — Protected</div>' +
+        '<div style="font-size:18px;font-weight:700;color:#000;margin-bottom:10px;line-height:1.25">' +
+        'This content is proprietary.</div>' +
+        '<div style="font-size:13px;color:#555;line-height:1.55;margin-bottom:18px">' +
+        'The R+Coach® system is trade-secret intellectual property. Reproduction, scraping, ' +
+        'or derivative use is strictly prohibited and may be prosecuted under the Defend Trade ' +
+        'Secrets Act (DTSA) and applicable copyright law.<br><br>' +
+        'For authorized use, contact your R+Coach Brand Manager.</div>' +
+        '<button id="rc-modal-close" style="background:#000;color:white;border:none;width:100%;' +
+        'padding:14px;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;' +
+        'letter-spacing:0.06em;text-transform:uppercase;cursor:pointer">I understand</button>' +
+      '</div>';
+    document.body.appendChild(m);
+    document.getElementById('rc-modal-close').onclick = function () { m.remove(); };
+    m.onclick = function (e) { if (e.target === m) m.remove(); };
+  }
+})();
+</script>
+
+</body>
+</html>
