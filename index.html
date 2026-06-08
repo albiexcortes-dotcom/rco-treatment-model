@@ -1901,46 +1901,48 @@ function generatePDF() {
   // Line 3: build fingerprint (forensic traceability).
   function drawPdfLegalFooter(pageNum) {
     const FY = PAGE_W / 2;
-    // Pre-measure the legal notice so we can stack everything below it without overlap
+    // Pre-measure the legal notice
     const notice = 'PROPRIETARY & CONFIDENTIAL · TRADE SECRET PROTECTED · Authorized for the named recipient only · Reproduction, reverse-engineering, or derivative use is prohibited under the Defend Trade Secrets Act and applicable copyright law.';
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6.5);
     const noticeLines = doc.splitTextToSize(notice, PAGE_W - (M * 2));
-    const noticeLineH = 7.5; // pt per wrapped line at 6.5pt font
 
-    // Compute total footer height: hairline + brand line + legal lines + build tag
-    // Layout from top:
-    //   hairline at FOOTER_TOP
-    //   brand at FOOTER_TOP + 8
-    //   legal lines start at FOOTER_TOP + 16, each line + 7.5pt
-    //   build tag at end + 6
-    const FOOTER_TOP = PAGE_H - 36 - (noticeLines.length * noticeLineH) - 18;
+    // Layout — anchor everything from the BOTTOM of the page with explicit gaps.
+    // Build tag is the lowest element; everything stacks UP from there.
+    const BOTTOM_PAD = 14;
+    const BUILD_Y       = PAGE_H - BOTTOM_PAD;          // ~778
+    const LEGAL_LINE_H  = 9;                            // 9pt between wrapped legal lines (was 7.5 → caused overlap)
+    const GAP_LEGAL_BUILD = 10;                          // clean gap between last legal line and build tag
+    const LEGAL_LAST_Y  = BUILD_Y - GAP_LEGAL_BUILD;
+    const LEGAL_FIRST_Y = LEGAL_LAST_Y - (noticeLines.length - 1) * LEGAL_LINE_H;
+    const BRAND_Y       = LEGAL_FIRST_Y - 11;
+    const HAIRLINE_Y    = BRAND_Y - 8;
 
-    // Hairline
+    // Hairline divider
     doc.setDrawColor(220, 220, 220);
     doc.setLineWidth(0.4);
-    doc.line(M, FOOTER_TOP, PAGE_W - M, FOOTER_TOP);
+    doc.line(M, HAIRLINE_Y, PAGE_W - M, HAIRLINE_Y);
 
-    // Line 1 — brand + page
+    // Brand + page
     doc.setTextColor(120, 120, 130);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.text('© 2026 R+Co / R+Coach · Treatment Revenue Model · Page ' + pageNum,
-      FY, FOOTER_TOP + 8, { align: 'center' });
+      FY, BRAND_Y, { align: 'center' });
 
-    // Line 2 — wrapped legal notice (pre-measured, no overlap)
+    // Legal notice — render each wrapped line explicitly at its own Y
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6.5);
     doc.setTextColor(150, 150, 160);
-    doc.text(noticeLines, FY, FOOTER_TOP + 16, { align: 'center' });
+    noticeLines.forEach((line, i) => {
+      doc.text(line, FY, LEGAL_FIRST_Y + (i * LEGAL_LINE_H), { align: 'center' });
+    });
 
-    // Line 3 — branded "Prepared by [Name]" signature + forensic build hash
-    // Positioned BELOW the last wrapped legal line with a clean 4pt gap
+    // Build tag — branded "Prepared by [Name]" + forensic hash
     if (buildTag) {
-      const buildY = FOOTER_TOP + 16 + (noticeLines.length * noticeLineH) - 3;
       doc.setFontSize(6);
       doc.setTextColor(140, 140, 155);
-      doc.text(buildTag, FY, buildY, { align: 'center' });
+      doc.text(buildTag, FY, BUILD_Y, { align: 'center' });
     }
   }
 
