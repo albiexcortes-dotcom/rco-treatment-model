@@ -1034,6 +1034,234 @@
 </div>
 
 <script>
+// ============================================================================
+// ACCESS GATE — Per-BM Password Authentication
+// ============================================================================
+// Each Brand Manager has a unique URL (?bm=BM-XXX) AND a unique password.
+// The password is validated against a stored SHA-256 hash specific to that BM.
+// Successful unlock cached in localStorage for 30 days, then re-prompts.
+//
+// Forensic note: even if a BM shares URL+password externally, every PDF
+// generated will still bake in that BM's fingerprint — so any leaked artifact
+// traces back to the originating BM.
+// ============================================================================
+(async function rcAccessGate() {
+  // --- Per-BM password hashes (SHA-256) ---
+  // These hashes are derived from passwords distributed via secure channel.
+  // Add new BMs by appending to this object with their SHA-256 hash.
+  const BM_HASHES = {
+    'BM-001': '2ae8055e6e626477cc39ac036e6c904b1cc8e98abc40b35e2486742285ea4b5e',
+    'BM-002': '827755ec82c04c11a1b1d2d6f8d320602c6478f33c487710349e1c6b03e58751',
+    'BM-003': '96986775c23464f4c1ea1d060e6b92b7540bc1d4253cf280c82b596b05536d3c',
+    'BM-004': '6f36986bf827898165333d47eae2e9c10e285c943d309d2296028f92bb08c22f',
+    'BM-005': '2488e7470d152bd76db8e8542ac0741d9812a9e85845dae329956a3dff81f35e',
+    'BM-006': '6781bd4b66225ebfaa3b56dbfb712d2bf15eea0ef5c5b882645f02daeb2856a7',
+    'BM-007': '20403aa2e70e3aab9fccd8e2ab00085cdaeb15a491fd77269ca7d81d0d78905b',
+    'BM-008': '1744e91f1c0dafe43a598ef252840c4efbc456d08cd9ccc9c701e69ef412f67e',
+  };
+  // MASTER-DEV bypass for internal testing (URL without ?bm= param)
+  const MASTER_BYPASS = 'rcoach-master-dev-internal-only';
+
+  // --- Read BM from URL ---
+  function getBmFromUrl() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const bm = (params.get('bm') || '').trim().toUpperCase();
+      if (/^BM-\d{3}$/.test(bm)) return bm;
+    } catch (e) {}
+    return null;
+  }
+
+  // --- Hash a string using SHA-256 ---
+  async function sha256(str) {
+    const buf = new TextEncoder().encode(str);
+    const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(hashBuf))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // --- Check localStorage cache (30-day expiry) ---
+  function getCachedAuth() {
+    try {
+      const raw = localStorage.getItem('rc_auth_v1');
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      const ageMs = Date.now() - (obj.ts || 0);
+      const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+      if (ageMs > THIRTY_DAYS) return null;
+      return obj;
+    } catch (e) { return null; }
+  }
+  function setCachedAuth(bm) {
+    try {
+      localStorage.setItem('rc_auth_v1', JSON.stringify({ bm, ts: Date.now() }));
+    } catch (e) {}
+  }
+
+  // --- Determine target BM ---
+  const targetBm = getBmFromUrl();   // null if no ?bm= param (MASTER mode)
+  const expectedHash = targetBm ? BM_HASHES[targetBm] : null;
+
+  // --- Skip gate if already authenticated for this BM ---
+  const cached = getCachedAuth();
+  if (cached && (
+    (targetBm && cached.bm === targetBm) ||
+    (!targetBm && cached.bm === 'MASTER-DEV')
+  )) {
+    return; // already unlocked, continue to app
+  }
+
+  // --- If URL has unknown BM, lock down hard ---
+  if (targetBm && !expectedHash) {
+    showLockedScreen('Invalid access link', 'The URL is not recognized. Contact your R+Coach lead for a valid access link.');
+    return new Promise(() => {});  // never resolves — app never loads
+  }
+
+  // --- Show password modal and wait for valid input ---
+  await new Promise(resolve => {
+    showPasswordGate(targetBm, async (entered) => {
+      const hash = await sha256(entered);
+      const valid = targetBm
+        ? (hash === expectedHash)
+        : (entered === MASTER_BYPASS);
+      if (valid) {
+        setCachedAuth(targetBm || 'MASTER-DEV');
+        document.getElementById('rc-access-gate')?.remove();
+        resolve();
+        return true;
+      }
+      return false;
+    });
+  });
+
+  // ============================================================
+  // UI: Password gate modal — full-screen, branded, no escape
+  // ============================================================
+  function showPasswordGate(bm, onSubmit) {
+    const gate = document.createElement('div');
+    gate.id = 'rc-access-gate';
+    gate.innerHTML = `
+      <style>
+        #rc-access-gate {
+          position: fixed; inset: 0; z-index: 999999;
+          background: #000; display: flex; align-items: center; justify-content: center;
+          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+          padding: 20px;
+        }
+        #rc-access-gate .gate-card {
+          max-width: 420px; width: 100%;
+          background: #0b0b0b; border: 1px solid rgba(20,182,181,0.3);
+          border-radius: 16px; padding: 36px 30px;
+          color: white; text-align: center;
+          box-shadow: 0 20px 80px rgba(0,0,0,0.6);
+        }
+        #rc-access-gate .gate-brand {
+          font-size: 28px; font-weight: 700; letter-spacing: -0.02em;
+          margin-bottom: 4px;
+        }
+        #rc-access-gate .gate-tag {
+          font-size: 10px; font-weight: 800; letter-spacing: 0.2em;
+          color: #14B6B5; text-transform: uppercase;
+          margin-bottom: 26px;
+        }
+        #rc-access-gate .gate-title {
+          font-size: 17px; font-weight: 700; margin-bottom: 8px;
+        }
+        #rc-access-gate .gate-bm {
+          font-size: 11px; color: #14B6B5; font-weight: 700;
+          letter-spacing: 0.1em; text-transform: uppercase;
+          margin-bottom: 18px;
+        }
+        #rc-access-gate .gate-sub {
+          font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.55;
+          margin-bottom: 22px;
+        }
+        #rc-access-gate input {
+          width: 100%; padding: 14px 16px;
+          background: #1a1a1a; border: 1.5px solid rgba(255,255,255,0.15);
+          border-radius: 10px; color: white;
+          font-family: inherit; font-size: 15px;
+          outline: none; transition: border-color 0.15s;
+          box-sizing: border-box;
+          letter-spacing: 0.02em;
+        }
+        #rc-access-gate input:focus { border-color: #14B6B5; }
+        #rc-access-gate button {
+          width: 100%; margin-top: 14px;
+          padding: 14px; background: #14B6B5; color: white;
+          border: none; border-radius: 10px;
+          font-family: inherit; font-size: 13px; font-weight: 700;
+          letter-spacing: 0.14em; text-transform: uppercase;
+          cursor: pointer; transition: background 0.15s;
+        }
+        #rc-access-gate button:hover { background: #0D8985; }
+        #rc-access-gate .gate-error {
+          margin-top: 14px; font-size: 12px; color: #FD818D;
+          min-height: 16px; line-height: 1.45;
+        }
+        #rc-access-gate .gate-footer {
+          margin-top: 26px; padding-top: 18px;
+          border-top: 1px solid rgba(255,255,255,0.08);
+          font-size: 10px; color: rgba(255,255,255,0.35);
+          letter-spacing: 0.06em; line-height: 1.6;
+        }
+      </style>
+      <div class="gate-card">
+        <div class="gate-brand">R+Co</div>
+        <div class="gate-tag">Treatment Revenue Model</div>
+        <div class="gate-title">Authorized Access Required</div>
+        ${bm ? `<div class="gate-bm">${bm}</div>` : ''}
+        <div class="gate-sub">
+          ${bm
+            ? 'Enter the access code provided by your R+Coach lead to continue.'
+            : 'Enter your access code to continue.'}
+        </div>
+        <input type="password" id="rc-gate-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Access code">
+        <button id="rc-gate-submit">Unlock</button>
+        <div class="gate-error" id="rc-gate-error"></div>
+        <div class="gate-footer">
+          © 2026 R+Co / R+Coach. Proprietary &amp; Confidential.<br>
+          Trade Secret Protected. Authorized users only.
+        </div>
+      </div>
+    `;
+    document.body.appendChild(gate);
+    const input = document.getElementById('rc-gate-input');
+    const errEl = document.getElementById('rc-gate-error');
+    const submit = async () => {
+      const val = input.value.trim();
+      if (!val) return;
+      errEl.textContent = '';
+      submit.disabled = true;
+      const ok = await onSubmit(val);
+      if (!ok) {
+        errEl.textContent = 'Invalid access code. Try again, or contact your R+Coach lead.';
+        input.value = '';
+        input.focus();
+        submit.disabled = false;
+      }
+    };
+    document.getElementById('rc-gate-submit').addEventListener('click', submit);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+    setTimeout(() => input.focus(), 100);
+  }
+
+  function showLockedScreen(title, message) {
+    // Overlay (doesn't remove body — keeps init scripts alive underneath)
+    const locked = document.createElement('div');
+    locked.id = 'rc-locked-screen';
+    locked.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#000;color:white;display:flex;align-items:center;justify-content:center;padding:20px;font-family:\'Helvetica Neue\',Helvetica,Arial,sans-serif';
+    locked.innerHTML = `
+      <div style="max-width:420px;text-align:center">
+        <div style="font-size:28px;font-weight:700;margin-bottom:4px">R+Co</div>
+        <div style="font-size:10px;font-weight:800;letter-spacing:0.2em;color:#FD818D;text-transform:uppercase;margin-bottom:26px">Access Denied</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:12px">${title}</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55">${message}</div>
+      </div>`;
+    document.body.appendChild(locked);
+  }
+})();
+
 // ========================================
 // STATE — defaults
 // ========================================
@@ -2246,14 +2474,24 @@ calc();
 
 // ============================================================================
 // LAYER 1 LEGAL PROTECTION — Trade-secret deterrence + build fingerprint
+// Per-BM URL fingerprinting reads `?bm=BM-XXX` from the URL — each Brand
+// Manager gets a unique URL that bakes their ID into every PDF + the footer.
+// MASTER-DEV fallback applies when no ?bm= param is present (internal testing).
 // ============================================================================
 (function rcLegalLayer() {
-  // -- Build fingerprint -----------------------------------------------------
-  // BRAND_MANAGER_ID is replaced at deploy-time per-BM. Default = MASTER build.
-  // Each deployed BM build gets a unique ID so any leaked copy is traceable.
-  const BRAND_MANAGER_ID = 'MASTER-DEV';                  // CHANGE PER BUILD
+  // -- Build fingerprint — dynamic per-BM via URL query string ---------------
+  function readBmFromUrl() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const bm = (params.get('bm') || '').trim().toUpperCase();
+      // Validate format: BM-XXX (BM-001 through BM-007 supported)
+      if (/^BM-\d{3}$/.test(bm)) return bm;
+    } catch (e) {}
+    return 'MASTER-DEV';
+  }
+  const BRAND_MANAGER_ID = readBmFromUrl();
   const APP_ID          = 'RCO-TREATMENT-REVENUE-MODEL';
-  const BUILD_DATE      = '2026.05.30';
+  const BUILD_DATE      = '2026.05.31';
   const BUILD_HASH      = btoa(APP_ID + '|' + BRAND_MANAGER_ID + '|' + BUILD_DATE).slice(0, 16);
   window.__RC_BUILD = { app: APP_ID, bm: BRAND_MANAGER_ID, date: BUILD_DATE, hash: BUILD_HASH };
 
