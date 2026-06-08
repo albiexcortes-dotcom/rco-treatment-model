@@ -1881,7 +1881,18 @@ function generatePDF() {
 
   // Build fingerprint pulled from the runtime legal layer (set in rcLegalLayer)
   const fp = (window.__RC_BUILD || {});
-  const buildTag = fp.hash ? `Build ${fp.hash} · ${fp.bm || ''} · ${fp.date || ''}` : '';
+  // PDF footer signature — shows "Prepared by [Name]" + forensic build hash.
+  // Name lookup is duplicated here from the access gate to keep scopes clean.
+  const BM_NAMES_FOR_PDF = {
+    'BM-001': 'Deb',      'BM-002': 'Dana',    'BM-003': 'Sara',    'BM-004': 'Jamie',
+    'BM-005': 'Jen',      'BM-006': 'Sarah',   'BM-007': 'Kasey',   'BM-008': 'Johnny',
+  };
+  const bmName = BM_NAMES_FOR_PDF[fp.bm] || fp.bm || '';
+  const buildTag = fp.hash
+    ? (bmName
+        ? `Prepared by ${bmName}  ·  Build ${fp.hash}  ·  ${fp.date || ''}`
+        : `Build ${fp.hash}  ·  ${fp.bm || ''}  ·  ${fp.date || ''}`)
+    : '';
 
   // Legally weighted footer — appears on every page of every PDF.
   // Line 1: short copyright + page number. Line 2: full proprietary notice.
