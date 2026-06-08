@@ -1070,8 +1070,10 @@
     'BM-007': 'Kasey',
     'BM-008': 'Johnny',
   };
-  // MASTER-DEV bypass for internal testing (URL without ?bm= param)
-  const MASTER_BYPASS = 'rcoach-master-dev-internal-only';
+  // MASTER-DEV access — for owner/internal use only.
+  // Stored as a SHA-256 hash. The plain-text password is NOT in this file —
+  // it lives only in the owner's secure records (MASTER_ACCESS folder).
+  const MASTER_HASH = '3fa23793033d7f92909289ce654a94bf249f06808ef98dec964550ae7e0ebea7';
 
   // --- Read BM from URL ---
   function getBmFromUrl() {
@@ -1135,7 +1137,7 @@
       const hash = await sha256(entered);
       const valid = targetBm
         ? (hash === expectedHash)
-        : (entered === MASTER_BYPASS);
+        : (hash === MASTER_HASH);
       if (valid) {
         setCachedAuth(targetBm || 'MASTER-DEV');
         document.getElementById('rc-access-gate')?.remove();
