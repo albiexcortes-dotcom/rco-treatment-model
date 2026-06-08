@@ -1059,6 +1059,17 @@
     'BM-007': '20403aa2e70e3aab9fccd8e2ab00085cdaeb15a491fd77269ca7d81d0d78905b',
     'BM-008': '1744e91f1c0dafe43a598ef252840c4efbc456d08cd9ccc9c701e69ef412f67e',
   };
+  // Per-BM display names — shown on the welcome gate (warmer than "BM-001")
+  const BM_NAMES = {
+    'BM-001': 'Deb',
+    'BM-002': 'Dana',
+    'BM-003': 'Sara',
+    'BM-004': 'Jamie',
+    'BM-005': 'Jen',
+    'BM-006': 'Sarah',
+    'BM-007': 'Kasey',
+    'BM-008': 'Johnny',
+  };
   // MASTER-DEV bypass for internal testing (URL without ?bm= param)
   const MASTER_BYPASS = 'rcoach-master-dev-internal-only';
 
@@ -1118,8 +1129,9 @@
   }
 
   // --- Show password modal and wait for valid input ---
+  const targetName = targetBm ? (BM_NAMES[targetBm] || targetBm) : null;
   await new Promise(resolve => {
-    showPasswordGate(targetBm, async (entered) => {
+    showPasswordGate(targetBm, targetName, async (entered) => {
       const hash = await sha256(entered);
       const valid = targetBm
         ? (hash === expectedHash)
@@ -1137,7 +1149,7 @@
   // ============================================================
   // UI: Password gate modal — full-screen, branded, no escape
   // ============================================================
-  function showPasswordGate(bm, onSubmit) {
+  function showPasswordGate(bm, name, onSubmit) {
     const gate = document.createElement('div');
     gate.id = 'rc-access-gate';
     gate.innerHTML = `
@@ -1209,11 +1221,12 @@
       <div class="gate-card">
         <div class="gate-brand">R+Co</div>
         <div class="gate-tag">Treatment Revenue Model</div>
-        <div class="gate-title">Authorized Access Required</div>
-        ${bm ? `<div class="gate-bm">${bm}</div>` : ''}
+        ${name
+          ? `<div class="gate-title">Welcome, ${name}.</div>`
+          : `<div class="gate-title">Authorized Access Required</div>`}
         <div class="gate-sub">
-          ${bm
-            ? 'Enter the access code provided by your R+Coach lead to continue.'
+          ${name
+            ? 'Enter your access code to continue.'
             : 'Enter your access code to continue.'}
         </div>
         <input type="password" id="rc-gate-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Access code">
